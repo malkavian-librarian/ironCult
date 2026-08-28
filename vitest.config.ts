@@ -5,7 +5,10 @@ import { config } from 'dotenv';
 config({ path: '.env.local' });
 
 export default defineConfig({
-  test: { environment: 'node' },
+  test: {
+    environment: 'node',
+    exclude: ['node_modules/**', 'tests/e2e/**'],
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, '.'),

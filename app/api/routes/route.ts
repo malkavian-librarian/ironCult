@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { eq, avg } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { routes } from '@/lib/db/schema';
+import { routes, ratings } from '@/lib/db/schema';
 import { requireAuth, AuthError } from '@/lib/auth/require-auth';
 import { findVoivodeship, findWarsawDistrict } from '@/lib/geo/voivodeship';
 
@@ -25,5 +26,11 @@ export async function POST(req: Request) {
 
 export async function GET() {
   const all = await db.query.routes.findMany({ orderBy: (r, { desc }) => desc(r.createdAt) });
-  return NextResponse.json(all);
+  const withRatings = await Promise.all(
+    all.map(async (route) => {
+      const [{ average }] = await db.select({ average: avg(ratings.score) }).from(ratings).where(eq(ratings.routeId, route.id));
+      return { ...route, averageRating: average === null ? null : Number(average) };
+    })
+  );
+  return NextResponse.json(withRatings);
 }

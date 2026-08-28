@@ -179,6 +179,13 @@ write to it.
   falls through to a 500 instead of the intended 409/etc. Walk `.cause` (see
   `isUniqueViolation()` in `app/api/crews/route.ts` for the pattern) when narrowing a catch to a
   specific Postgres error code.
+- **`npx vitest run` (no path arg) picks up Playwright's `tests/e2e/*.spec.ts` files by default**
+  and fails on all of them ("Playwright Test did not expect test() to be called here") —
+  `tests/e2e/*.spec.ts` matches vitest's default `*.spec.ts` include glob even though those files
+  use `@playwright/test`'s `test`, not vitest's. Fixed via `test.exclude: ['node_modules/**',
+  'tests/e2e/**']` in `vitest.config.ts`. If a fresh `vitest run` (full suite, no path) reports
+  failures only in `tests/e2e/*`, this is almost certainly it, not a real regression — check the
+  actual vitest-run test count against what's expected before assuming something broke.
 - **Track A and Track B never touch each other's application code** — they share only the Phase 0
   schema (`lib/db/schema.ts`). Turf-war is a read-only query against Track A's tables from Track B.
 - **`voivodeship` on `routes` is always derived server-side** from lat/lon via point-in-polygon —
