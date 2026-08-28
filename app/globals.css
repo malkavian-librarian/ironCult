@@ -159,6 +159,8 @@ button:hover { background: var(--signal-strong); }
   border: 0;
   cursor: pointer;
   padding: 0;
+  min-width: 0;
+  min-height: 0;
 }
 
 .presence-dot-self {
@@ -180,10 +182,39 @@ button:hover { background: var(--signal-strong); }
   animation: presence-pulse 1.2s ease-out infinite;
 }
 
-.map-card {
-  width: min(260px, 78vw);
-  color: var(--paper);
+.maplibregl-popup .maplibregl-popup-content {
   background: #080807;
+  color: var(--paper);
+  padding: 0;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+
+.maplibregl-popup.maplibregl-popup-anchor-bottom .maplibregl-popup-tip { border-top-color: #080807; }
+.maplibregl-popup.maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bottom-color: #080807; }
+.maplibregl-popup.maplibregl-popup-anchor-left .maplibregl-popup-tip { border-right-color: #080807; }
+.maplibregl-popup.maplibregl-popup-anchor-right .maplibregl-popup-tip { border-left-color: #080807; }
+
+.maplibregl-popup .maplibregl-popup-close-button {
+  width: 32px;
+  height: 32px;
+  font-size: 1.3rem;
+  color: var(--paper);
+  right: 0.15rem;
+  top: 0.15rem;
+}
+
+.maplibregl-popup .maplibregl-popup-close-button:hover {
+  background: rgba(243, 239, 230, 0.12);
+  border-radius: 50%;
+}
+
+.map-card {
+  width: min(280px, 80vw);
+  color: var(--paper);
+  padding: 1rem;
+  display: grid;
+  gap: 0.35rem;
 }
 
 .map-card img {
@@ -194,25 +225,33 @@ button:hover { background: var(--signal-strong); }
 }
 
 .map-card h3 {
-  margin: 0.2rem 0 0.5rem;
+  margin: 0;
+  font-size: 1.1rem;
 }
 
 .map-card-kicker {
   margin: 0;
-  color: var(--mist);
-  font-size: 0.72rem;
+  color: var(--visor);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .map-card dl {
-  margin: 0.5rem 0 0;
-  font-size: 0.8rem;
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
   font-family: var(--font-data);
 }
 
 .map-card dt {
   color: var(--mist);
-  display: inline;
+  display: block;
+  margin-top: 0.25rem;
+}
+
+.map-card dt:first-child {
+  margin-top: 0;
 }
 
 .map-card dd {
