@@ -4,10 +4,14 @@ import { DISTRICT_COLORS, DISTRICT_FILL_OPACITY, districtColor } from '@/lib/map
 
 type DistrictCollection = { features: Array<{ properties: { name: string } }> };
 
-function hue(color: string): number {
-  const match = /^hsl\((\d+), \d+%, \d+%\)$/.exec(color);
+function parseHsl(color: string): { hue: number; saturation: number; lightness: number } {
+  const match = /^hsl\((\d+), (\d+)%, (\d+)%\)$/.exec(color);
   if (!match) throw new Error(`Invalid HSL color: ${color}`);
-  return Number(match[1]);
+  return {
+    hue: Number(match[1]),
+    saturation: Number(match[2]),
+    lightness: Number(match[3]),
+  };
 }
 
 function circularHueDistance(a: number, b: number): number {
@@ -22,12 +26,14 @@ describe('district color palette', () => {
     expect(Object.keys(DISTRICT_COLORS).sort()).toEqual([...names].sort());
   });
 
-  it('uses saturated, visibly distinct district colors and a neutral fallback', () => {
+  it('uses very light muted district colors with high fill opacity and a neutral fallback', () => {
     const colors = Object.values(DISTRICT_COLORS);
-    const hues = colors.map(hue);
+    const parsedColors = colors.map(parseHsl);
+    const hues = parsedColors.map((color) => color.hue);
 
     expect(new Set(colors).size).toBe(colors.length);
-    expect(colors.every((color) => /^hsl\(\d+, (7[8-9]|[89]\d)%, (4[2-9]|5\d|6[0-2])%\)$/.test(color))).toBe(true);
+    expect(parsedColors.every((color) => color.saturation >= 36 && color.saturation <= 58)).toBe(true);
+    expect(parsedColors.every((color) => color.lightness >= 68 && color.lightness <= 80)).toBe(true);
     for (let i = 0; i < hues.length; i++) {
       for (let j = i + 1; j < hues.length; j++) {
         expect(circularHueDistance(hues[i], hues[j])).toBeGreaterThanOrEqual(12);
@@ -37,6 +43,6 @@ describe('district color palette', () => {
     expect(districtColor('missing')).toBe('hsl(0, 0%, 26%)');
     expect(districtColor(null)).toBe('hsl(0, 0%, 26%)');
     expect(districtColor(undefined)).toBe('hsl(0, 0%, 26%)');
-    expect(DISTRICT_FILL_OPACITY).toBeGreaterThanOrEqual(0.84);
+    expect(DISTRICT_FILL_OPACITY).toBeGreaterThanOrEqual(0.92);
   });
 });

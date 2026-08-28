@@ -1,24 +1,24 @@
-export const DISTRICT_FILL_OPACITY = 0.84;
+export const DISTRICT_FILL_OPACITY = 0.94;
 
 export const DISTRICT_COLORS: Record<string, string> = {
-  bemowo: 'hsl(5, 88%, 52%)',
-  bialoleka: 'hsl(25, 92%, 50%)',
-  bielany: 'hsl(45, 94%, 50%)',
-  mokotow: 'hsl(65, 86%, 48%)',
-  ochota: 'hsl(85, 82%, 46%)',
-  'praga-polnoc': 'hsl(105, 80%, 44%)',
-  'praga-poludnie': 'hsl(125, 78%, 44%)',
-  rembertow: 'hsl(145, 80%, 42%)',
-  srodmiescie: 'hsl(165, 84%, 44%)',
-  targowek: 'hsl(185, 88%, 48%)',
-  ursus: 'hsl(205, 90%, 52%)',
-  ursynow: 'hsl(225, 88%, 56%)',
-  wawer: 'hsl(245, 86%, 60%)',
-  wesola: 'hsl(265, 84%, 60%)',
-  wilanow: 'hsl(285, 84%, 58%)',
-  wlochy: 'hsl(305, 86%, 56%)',
-  wola: 'hsl(325, 90%, 56%)',
-  zoliborz: 'hsl(345, 88%, 54%)',
+  bemowo: 'hsl(4, 46%, 72%)',
+  bialoleka: 'hsl(24, 52%, 74%)',
+  bielany: 'hsl(44, 54%, 76%)',
+  mokotow: 'hsl(64, 48%, 74%)',
+  ochota: 'hsl(84, 44%, 72%)',
+  'praga-polnoc': 'hsl(104, 42%, 72%)',
+  'praga-poludnie': 'hsl(124, 40%, 70%)',
+  rembertow: 'hsl(144, 42%, 70%)',
+  srodmiescie: 'hsl(164, 44%, 72%)',
+  targowek: 'hsl(184, 46%, 74%)',
+  ursus: 'hsl(204, 50%, 76%)',
+  ursynow: 'hsl(224, 48%, 76%)',
+  wawer: 'hsl(244, 46%, 78%)',
+  wesola: 'hsl(264, 44%, 78%)',
+  wilanow: 'hsl(284, 46%, 76%)',
+  wlochy: 'hsl(304, 48%, 76%)',
+  wola: 'hsl(324, 52%, 76%)',
+  zoliborz: 'hsl(344, 50%, 74%)',
 };
 
 export function districtColor(name: string | null | undefined): string {
