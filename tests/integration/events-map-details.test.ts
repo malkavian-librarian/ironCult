@@ -47,6 +47,7 @@ describe('events map detail contract', () => {
       AND (
         riders.email LIKE 'map-%@example.com'
         OR riders.email LIKE 'flyerone-%@example.com'
+        OR riders.email LIKE '%@demo.ironcult.local'
       )
     `);
 
