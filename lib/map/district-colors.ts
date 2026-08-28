@@ -1,24 +1,25 @@
-export const DISTRICT_FILL_OPACITY = 0.94;
+export const DISTRICT_FILL_OPACITY = 0.98;
 
+// Dark neon fills are intentional: the map should read like a cyberpunk HUD, not pastel zones.
 export const DISTRICT_COLORS: Record<string, string> = {
-  bemowo: 'hsl(4, 46%, 72%)',
-  bialoleka: 'hsl(24, 52%, 74%)',
-  bielany: 'hsl(44, 54%, 76%)',
-  mokotow: 'hsl(64, 48%, 74%)',
-  ochota: 'hsl(84, 44%, 72%)',
-  'praga-polnoc': 'hsl(104, 42%, 72%)',
-  'praga-poludnie': 'hsl(124, 40%, 70%)',
-  rembertow: 'hsl(144, 42%, 70%)',
-  srodmiescie: 'hsl(164, 44%, 72%)',
-  targowek: 'hsl(184, 46%, 74%)',
-  ursus: 'hsl(204, 50%, 76%)',
-  ursynow: 'hsl(224, 48%, 76%)',
-  wawer: 'hsl(244, 46%, 78%)',
-  wesola: 'hsl(264, 44%, 78%)',
-  wilanow: 'hsl(284, 46%, 76%)',
-  wlochy: 'hsl(304, 48%, 76%)',
-  wola: 'hsl(324, 52%, 76%)',
-  zoliborz: 'hsl(344, 50%, 74%)',
+  bemowo: 'hsl(176, 96%, 38%)',
+  bialoleka: 'hsl(194, 98%, 42%)',
+  bielany: 'hsl(212, 96%, 44%)',
+  mokotow: 'hsl(232, 92%, 46%)',
+  ochota: 'hsl(252, 94%, 45%)',
+  'praga-polnoc': 'hsl(274, 96%, 43%)',
+  'praga-poludnie': 'hsl(296, 98%, 44%)',
+  rembertow: 'hsl(316, 96%, 42%)',
+  srodmiescie: 'hsl(336, 98%, 43%)',
+  targowek: 'hsl(356, 94%, 44%)',
+  ursus: 'hsl(18, 96%, 42%)',
+  ursynow: 'hsl(38, 98%, 43%)',
+  wawer: 'hsl(58, 100%, 42%)',
+  wesola: 'hsl(78, 98%, 40%)',
+  wilanow: 'hsl(100, 96%, 38%)',
+  wlochy: 'hsl(122, 96%, 37%)',
+  wola: 'hsl(144, 94%, 38%)',
+  zoliborz: 'hsl(164, 96%, 37%)',
 };
 
 export function districtColor(name: string | null | undefined): string {

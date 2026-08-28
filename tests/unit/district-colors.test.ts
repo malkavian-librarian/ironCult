@@ -26,14 +26,18 @@ describe('district color palette', () => {
     expect(Object.keys(DISTRICT_COLORS).sort()).toEqual([...names].sort());
   });
 
-  it('uses very light muted district colors with high fill opacity and a neutral fallback', () => {
+  it('uses dark cyberpunk HUD district colors with very high fill opacity and a neutral fallback', () => {
     const colors = Object.values(DISTRICT_COLORS);
     const parsedColors = colors.map(parseHsl);
     const hues = parsedColors.map((color) => color.hue);
 
     expect(new Set(colors).size).toBe(colors.length);
-    expect(parsedColors.every((color) => color.saturation >= 36 && color.saturation <= 58)).toBe(true);
-    expect(parsedColors.every((color) => color.lightness >= 68 && color.lightness <= 80)).toBe(true);
+    expect(parsedColors.every((color) => color.saturation >= 82)).toBe(true);
+    expect(parsedColors.every((color) => color.lightness >= 32 && color.lightness <= 48)).toBe(true);
+    expect(hues.some((hueValue) => hueValue >= 172 && hueValue <= 196)).toBe(true);
+    expect(hues.some((hueValue) => hueValue >= 292 && hueValue <= 320)).toBe(true);
+    expect(hues.some((hueValue) => hueValue >= 52 && hueValue <= 84)).toBe(true);
+    expect(hues.some((hueValue) => hueValue >= 108 && hueValue <= 150)).toBe(true);
     for (let i = 0; i < hues.length; i++) {
       for (let j = i + 1; j < hues.length; j++) {
         expect(circularHueDistance(hues[i], hues[j])).toBeGreaterThanOrEqual(12);
@@ -43,6 +47,6 @@ describe('district color palette', () => {
     expect(districtColor('missing')).toBe('hsl(0, 0%, 26%)');
     expect(districtColor(null)).toBe('hsl(0, 0%, 26%)');
     expect(districtColor(undefined)).toBe('hsl(0, 0%, 26%)');
-    expect(DISTRICT_FILL_OPACITY).toBeGreaterThanOrEqual(0.92);
+    expect(DISTRICT_FILL_OPACITY).toBeGreaterThanOrEqual(0.96);
   });
 });
