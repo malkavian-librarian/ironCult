@@ -35,6 +35,51 @@ browser.
 - When a task's scope changes mid-work (cut, expanded, blocked), update the issue immediately —
   don't let the board drift from reality. A stale board is worse than no board for handover.
 
+## Acceptance criteria (required, before every subtask)
+
+**Before starting any task/subtask from a plan doc** (Phase 0, Track A, Track B, or Phase 4 —
+every "Task N" section in those plan docs), its GitHub issue must contain an **Acceptance
+Criteria** checklist using GitHub's native task-list syntax (`- [ ]`), derived from that task's
+own **Interfaces** section and its test assertions (status codes, exact field names/values,
+sort order, what's excluded, etc.) — not a generic "tests pass" line. If the issue was pre-filed
+without one (as Phase 0's Track A/B backlog was), add the checklist via `gh issue edit` before
+writing any code for that task. If the issue doesn't exist yet, create it first (see `## Issues`
+above), then add the checklist.
+
+Reason: a checklist derived from the plan's own Interfaces/test spec is a concrete, checkable
+contract that survives a handover — the next session (or a reviewer) can verify "done" without
+re-reading the whole task's prose, and without trusting a self-reported "looks good."
+
+**On completion of the task:**
+1. Re-check the implementation against each criterion individually — run the actual tests/commands
+   each criterion names, don't eyeball the code.
+2. Edit the issue body to check off (`- [x]`) every criterion that passed. Leave unchecked any that
+   didn't, and say why in the completion comment (deferred, cut for time budget, or a real gap).
+3. Post a completion comment (`gh issue comment <n> --body "..."`) stating pass/fail per criterion
+   — not just "done." If every box is checked, say so explicitly; if any is unchecked, name it and
+   the reason.
+4. Only then close the issue (or move it to Done on the board) and proceed to the next task.
+
+**Mechanics — `gh` has no "toggle one checklist item" command; you rewrite the issue body:**
+
+```powershell
+# Read the current body, edit the specific `- [ ]` -> `- [x]` lines locally, then:
+gh issue edit 11 --body-file scratchpad/issue-11-body.md
+
+# Or append acceptance criteria to an issue that doesn't have them yet:
+gh issue edit 11 --body "$(gh issue view 11 --json body -q .body)
+
+## Acceptance Criteria
+- [ ] POST /api/routes derives voivodeship server-side via findVoivodeship — never accepts a client-supplied voivodeship
+- [ ] Coordinates outside Poland return 400 with no DB write"
+
+# Post the completion comment
+gh issue comment 11 --body "Acceptance criteria check:
+- [x] voivodeship always server-derived - confirmed, test passes
+- [x] out-of-Poland coords rejected with no write - confirmed, test passes
+All criteria met."
+```
+
 ## Project board
 
 - Move the issue's board status (Todo → In Progress → Done, or whatever columns the board uses)

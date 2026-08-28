@@ -7,8 +7,9 @@
 ironCult is a minimalistic, Poland-only motorcycle social network (Next.js App Router +
 TypeScript, Neon Postgres/Drizzle, hand-rolled JWT auth, MapLibre GL). Riders log routes, rate
 each other's routes, join crews, see leaderboards, post buddy-finder requests, browse events, and
-see a live map of Poland with rider presence, events, and a "turf war" crew-ownership layer per
-voivodeship. Built under a 6-hour hackathon time budget; Vercel-hosted.
+see a live map of Poland with rider presence, events, and a "turf war" crew-ownership layer —
+scoped to Warsaw districts for the demo (see Gotchas). Built under a 6-hour hackathon time
+budget; Vercel-hosted at https://ironcult.vercel.app.
 
 - Run: `npm run dev` · Test: `npx vitest run` · Deploy: Vercel (via `vercel:vercel-cli` /
   `vercel:deploy` skill)
@@ -42,6 +43,11 @@ Start every session by reading: `CLAUDE.md` → the relevant plan under
   `phase:4`). Update/close the issue as part of finishing the task, not as a separate pass later —
   this is what makes handover between sessions/agents cheap. See
   [.claude/rules/github-projects.md](.claude/rules/github-projects.md).
+- **Before starting any task, its GitHub issue must have an Acceptance Criteria checklist**
+  (GitHub task-list syntax, derived from that task's own Interfaces/test spec in the plan doc —
+  not generic). On completion, check off each criterion that actually passed and post a
+  pass/fail comment before closing the issue. Full mechanics in
+  [.claude/rules/github-projects.md](.claude/rules/github-projects.md#acceptance-criteria-required-before-every-subtask).
 
 ---
 
@@ -127,12 +133,58 @@ write to it.
 - **PowerShell only, no Bash** on this machine — `&&`/`||` aren't valid in PowerShell 5.1; use
   `;` or `if ($?) { ... }`.
 - **No Tailwind, no Google Fonts** — plain CSS custom properties in `app/globals.css`, system font
-  stacks, matching Rid3rMap's precedent.
+  stacks, matching Rid3rMap's precedent. `create-next-app` scaffolds Geist Google Fonts by
+  default in `app/layout.tsx` — this was stripped in Phase 0 Task 5; don't let it come back via a
+  future scaffold/regen.
 - **Auth is hand-rolled JWT/Bearer, not NextAuth** — deliberate, so it's portable to a future Expo
   mobile client. Don't "fix" this by reintroducing NextAuth.
-- **`buddyFinder` and `meetups` at repo root are market-research docs**, not app files — see
-  Phase 0 Task 1 for relocating them to `docs/research/` if not already done.
+- **Repo directory name `ironCult` has a capital letter** — both `npx create-next-app@latest .`
+  and `npx vercel link` refuse to derive a project/package name from it ("names can no longer
+  contain capital letters" / same for Vercel). Fix: scaffold into a lowercase temp dir and move
+  files in (already done for the Next.js app), or pass an explicit name flag (`vercel link
+  --project ironcult`). If you ever re-scaffold or re-link, expect this to bite again.
+- **`drizzle-kit` and `vitest` do NOT auto-load `.env.local`** — only Next.js itself does. Both
+  `drizzle.config.ts` and `vitest.config.ts` explicitly `config({ path: '.env.local' })` (via
+  `dotenv`) rather than the plan's original `import 'dotenv/config'` (which only loads `.env`,
+  and we don't have one). If a future config file needs `DATABASE_URL`/`JWT_SECRET` outside
+  Next.js request handling, it needs the same explicit `.env.local` load or it'll silently see
+  `undefined`.
+- **Vitest doesn't resolve the `@/*` tsconfig path alias on its own** — `vitest.config.ts` has an
+  explicit `resolve.alias` mapping `@` to the repo root. Without it, every `@/lib/...` import in a
+  test fails with "Cannot find package" even though the same import works fine under `next build`.
+- **`DATABASE_URL` (and its siblings) are auto-injected into Vercel Production/Preview/Development**
+  by the Neon Marketplace integration (`vercel integration add neon`) — don't manually
+  `vercel env add DATABASE_URL`, it's already there. `JWT_SECRET` is not auto-injected (it's
+  app-specific) and must be added manually.
+- **`vercel env add <VAR> preview --value <v> --yes` still prompts for a git branch** on this
+  CLI version even with `--yes` piped `y` — it wants either a specific `--yes`-accepted branch
+  arg or hits the same `action_required` JSON response regardless. Production and Development
+  work fine with `--yes`; Preview needs manual follow-up (dashboard or a working CLI invocation)
+  — don't assume Preview env vars are set just because Production/Development are.
+- **`gh project item-add`/`item-edit` need the `project` OAuth scope**, which the default `gh
+  auth login` token often lacks (`repo`/`workflow`/`read:org` only). Symptom: "your
+  authentication token is missing required scopes [read:project]". Fix: `gh auth refresh -s
+  project,read:project` (device-flow, needs the user to visit github.com/login/device and enter
+  a code — can't be done non-interactively).
+- **`buddyFinder` and `meetups` were relocated to `docs/research/`** as
+  `buddy-finder-market-research.md` / `meetups-market-research.md` in Phase 0 Task 1 — if you see
+  bare `buddyFinder`/`meetups` files at repo root again, something re-created them; they aren't
+  app files.
+- **AGENTS.md's `<!-- BEGIN:nextjs-agent-rules -->...<!-- END:nextjs-agent-rules -->` block is
+  rewritten by `next dev` itself** — safe to edit AGENTS.md outside that block (that's where our
+  own agent-facing conventions live), but don't hand-edit inside it, it'll just get overwritten.
 - **Track A and Track B never touch each other's application code** — they share only the Phase 0
   schema (`lib/db/schema.ts`). Turf-war is a read-only query against Track A's tables from Track B.
 - **`voivodeship` on `routes` is always derived server-side** from lat/lon via point-in-polygon —
   never accept it as client input.
+- **Turf-war scope changed mid-Phase-0 (2026-08-28): Warsaw districts, not whole-Poland
+  voivodeships.** `routes.district` (nullable) is derived server-side via `findWarsawDistrict()`
+  from `@/lib/geo/voivodeship`, populated only when a route falls inside Warsaw. `voivodeship`
+  is unchanged and still used everywhere else (buddy finder, events, leaderboards). Track B's
+  turf-war query must `GROUP BY district WHERE district IS NOT NULL`, not by voivodeship — see
+  the design spec's 2026-08-28 addendum and issue #18 before touching `app/api/turf-war/*`.
+- **`public/map/` has two boundary files, not one**: `poland-voivodeships.json` (16 features, all
+  of Poland, base map + `findVoivodeship`) and `warsaw-districts.json` (18 features, Warsaw only,
+  turf-war + `findWarsawDistrict`) — both produced by `lib/geo/voivodeship.ts`. Don't conflate
+  them; the turf-war fill layer renders the Warsaw file, the base map/voivodeship derivation uses
+  the Poland file.

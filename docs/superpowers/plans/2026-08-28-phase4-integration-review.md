@@ -15,6 +15,8 @@
 - Git binary (Windows, this session): `C:\Users\FlyerOne\AppData\Local\GitHubDesktop\app-3.5.11\resources\app\git\cmd\git.exe`, store as `$git` in PowerShell.
 - Time budget: this phase must fit in **whatever remains of the 6-hour window** — if you're down to under 30 minutes when starting this, skip straight to Task 2's merge + Task 5's deploy, and defer the full Playwright suite (Task 3) to a quick manual click-through instead. State clearly in the final report which steps were shortened and why.
 - This is the last phase — there is no "next session" to hand off remaining work to within the hackathon window. Prioritize: (1) something is deployed and loads, (2) the core demo path works (register → see the live map with at least one pin or turf-war color), (3) everything else.
+- **Acceptance criteria checklist, required before every task (added 2026-08-28):** before starting any task below, create its GitHub issue (label `phase:4` — none pre-filed, unlike Phase 0/Track A/B) with an "## Acceptance Criteria" checklist (GitHub `- [ ]` task-list syntax) derived from that task's own steps/expected outcomes below. On finishing: re-verify against each criterion, check off (`- [x]`) what passed, post a completion comment with pass/fail per criterion, then close the issue. Full mechanics: `.claude/rules/github-projects.md`. Given this phase's tight time budget, keep each checklist short (3-6 items) — the point is a checkable contract, not exhaustive prose.
+- Turf-war in this phase's Task 3 end-to-end test and Task 5 smoke-check is **Warsaw-district-based**, not whole-Poland-voivodeship — see the design spec's 2026-08-28 addendum and Track B's Task 5. If you see `voivodeship` where `district` is meant in this doc's remaining text, treat `district` as correct (this note was added after the rest of this plan was drafted).
 
 ---
 
@@ -167,11 +169,14 @@ test('full ironCult flow: register, crew, route, buddy post, event, live map', a
   await page.goto('/map');
   await expect(page.locator('[data-testid="live-map"]')).toBeVisible();
 
-  // Confirm turf-war endpoint reflects the crew's new route
+  // Confirm turf-war endpoint reflects the crew's new route.
+  // Turf-war is Warsaw-district-based (2026-08-28 scope update, see design spec addendum),
+  // not voivodeship-based — the route's coords above (52.2297, 21.0122) are central Warsaw,
+  // which lib/geo/voivodeship.ts's own test confirms resolves to district "srodmiescie".
   const turfRes = await page.request.get('/api/turf-war');
   const turfBody = await turfRes.json();
-  expect(turfBody.mazowieckie).toBeDefined();
-  expect(turfBody.mazowieckie.crewId).toBe(crew.id);
+  expect(turfBody.srodmiescie).toBeDefined();
+  expect(turfBody.srodmiescie.crewId).toBe(crew.id);
 
   // Confirm buddy finder list shows the post
   const buddyListRes = await page.request.get('/api/buddy-posts?voivodeship=mazowieckie');
@@ -194,7 +199,7 @@ npm run dev
 ```powershell
 npx playwright test tests/e2e/full-flow.spec.ts
 ```
-Expected: PASS. If any assertion fails, that's a real integration bug between the two tracks (e.g. a voivodeship slug mismatch between what Track A's point-in-polygon helper produces and what Track B's buddy-finder/events forms hardcoded as filter options) — fix it now. **Voivodeship slug consistency is the single most likely integration bug** given both tracks independently hardcode or derive voivodeship strings; if `turfBody.mazowieckie` is undefined, check whether Track A's `findVoivodeship(52.2297, 21.0122)` actually returns the string `"mazowieckie"` (see `lib/geo/voivodeship.ts`'s own test) versus what this test assumes — align on whatever the real value is.
+Expected: PASS. If any assertion fails, that's a real integration bug between the two tracks (e.g. a voivodeship or district slug mismatch between what Track A's point-in-polygon helpers produce and what Track B's buddy-finder/events forms hardcoded as filter options, or the turf-war layer expects) — fix it now. **Slug consistency is the single most likely integration bug** given both tracks independently hardcode or derive voivodeship/district strings; if `turfBody.srodmiescie` is undefined, check whether `findVoivodeship(52.2297, 21.0122)` and `findWarsawDistrict(52.2297, 21.0122)` actually return `"mazowieckie"` / `"srodmiescie"` (see `lib/geo/voivodeship.ts`'s own test) versus what this test assumes — align on whatever the real values are.
 
 - [ ] **Step 3: Commit**
 

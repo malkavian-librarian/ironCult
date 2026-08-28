@@ -17,10 +17,12 @@
 - **Branch:** work on a branch named `track-b` (create from `main`: `git checkout -b track-b`). Push to `track-b`, open PRs from `track-b` into `main` — never push directly to `main`.
 - **GitHub is a required part of every task, not optional bookkeeping.** For each task below:
   1. Before starting, comment on the task's GitHub issue: `gh issue comment <number> --body "Starting: <task name>"`.
-  2. Every commit message references the issue: e.g. `git commit -m "feat: add buddy finder posts API (#7)"`.
+  2. Every commit message references the issue: e.g. `git commit -m "feat: add buddy finder posts API (#13)"`. **Issue numbers for this track are #13–#18** (Phase 0 used #1–#6, Track A used #7–#12): Task 1→#13, Task 2→#14, Task 3→#15, Task 4→#16 (presence pins) and #17 (event pins), Task 5→#18. The per-task `gh issue comment <n>`/`Closes #<n>` calls below use these numbers.
   3. After finishing (tests passing, reviewed, simplified, smoke-tested), push and open/update a PR: `gh pr create --base main --head track-b --title "<task>" --body "Closes #<number>"`.
   4. Comment on the issue when done, with a one-line summary.
   If `gh` isn't available, do the equivalent via the GitHub web UI — do not skip this, it's an explicit user requirement.
+- **Acceptance criteria checklist, required before every task (added 2026-08-28):** before starting any task below, its GitHub issue must have an "## Acceptance Criteria" checklist (GitHub `- [ ]` task-list syntax) derived from that task's own **Interfaces** section and test assertions — not a generic "tests pass" line. Issues #13–#18 (this track) were pre-filed in Phase 0 with acceptance criteria already added; if you find one missing it, add it via `gh issue edit <n> --body "..."` before writing code for that task. On finishing a task: re-verify against each criterion individually (run the actual test/command it names), check off (`- [x]`) each one that passed in the issue body, and post a completion comment stating pass/fail per criterion before closing the issue. Full mechanics: `.claude/rules/github-projects.md`.
+- **SCOPE UPDATE (2026-08-28, added after this plan was written):** turf-war for the demo is Warsaw-district-based, not whole-Poland-voivodeship-based — see the design spec's 2026-08-28 addendum. This changes Task 5 below: group by `routes.district` (nullable, set only inside Warsaw), not `routes.voivodeship`; render `public/map/warsaw-districts.json`, not `public/map/poland-voivodeships.json`, as the turf-war fill layer's source. Task 5's code samples below have been updated accordingly — read them as written, not as "voivodeship" in the surrounding prose might suggest.
 - Time budget: **Track B should take no more than 2.5 hours** (it runs in parallel with Track A, not after it). 5 tasks below — if a task runs long, cut scope (e.g. skip a filter option) rather than consume the whole budget. Report time spent at each checkpoint.
 - No Tailwind. Use the CSS custom properties in `app/globals.css` (`--signal`, `--paper`, `--panel`, `--line`, `--visor`, etc.) and the `.panel` class — don't invent a new visual language.
 - Every route handler that touches rider-owned data calls `requireAuth(req)` from `@/lib/auth/require-auth` and derives the acting rider from its return value — never trust a client-supplied rider id.
@@ -185,10 +187,10 @@ Use the `Agent` tool, `model: "haiku"`: review `app/api/buddy-posts/route.ts` fo
 
 ```bash
 git add app/api/buddy-posts app/\(app\)/buddy-finder tests/integration/buddy-posts.test.ts tests/e2e/buddy-finder.spec.ts playwright.config.ts
-git commit -m "feat: buddy finder create + filtered list (#7)"
+git commit -m "feat: buddy finder create + filtered list (#13)"
 git push -u origin track-b
-gh pr create --base main --head track-b --title "Track B: buddy finder" --body "Closes #7"
-gh issue comment 7 --body "Done: buddy finder create+list implemented and tested."
+gh pr create --base main --head track-b --title "Track B: buddy finder" --body "Closes #13"
+gh issue comment 13 --body "Done: buddy finder create+list implemented and tested."
 ```
 
 **STOP-AND-REVIEW CHECKPOINT:** report status, time elapsed, wait for confirmation before Task 2.
@@ -372,9 +374,9 @@ test('events page renders form and list', async ({ page }) => {
 
 ```bash
 git add app/api/events lib/events app/\(app\)/events tests/unit/events tests/integration/events.test.ts tests/e2e/events.spec.ts
-git commit -m "feat: events create/browse with happening-now badge (#8)"
+git commit -m "feat: events create/browse with happening-now badge (#14)"
 git push origin track-b
-gh issue comment 8 --body "Done: events create/browse/filter with happening-now badge implemented and tested."
+gh issue comment 14 --body "Done: events create/browse/filter with happening-now badge implemented and tested."
 ```
 
 **STOP-AND-REVIEW CHECKPOINT.**
@@ -562,9 +564,9 @@ Place this component in the nav bar or the live map page header (Task 4 decides 
 
 ```bash
 git add app/api/presence lib/presence components/PresenceToggle.tsx tests/unit/presence tests/integration/presence.test.ts
-git commit -m "feat: presence upsert/list + geolocation toggle (#9)"
+git commit -m "feat: presence upsert/list + geolocation toggle (#15)"
 git push origin track-b
-gh issue comment 9 --body "Done: presence ping/list implemented, geolocation toggle component ready for the map page."
+gh issue comment 15 --body "Done: presence ping/list implemented, geolocation toggle component ready for the map page."
 ```
 
 **STOP-AND-REVIEW CHECKPOINT.**
@@ -701,17 +703,17 @@ Run with `npm run dev` in another terminal: `npx playwright test tests/e2e/live-
 
 ```bash
 git add app/\(app\)/map components/LiveMap.tsx package.json package-lock.json tests/e2e/live-map.spec.ts
-git commit -m "feat: live map with presence and event pins (#10, #11)"
+git commit -m "feat: live map with presence and event pins (#16, #17)"
 git push origin track-b
-gh issue comment 10 --body "Done: presence pins render and poll every 10s."
-gh issue comment 11 --body "Done: event pins render with happening-now highlight."
+gh issue comment 16 --body "Done: presence pins render and poll every 10s."
+gh issue comment 17 --body "Done: event pins render with happening-now highlight."
 ```
 
 **STOP-AND-REVIEW CHECKPOINT.**
 
 ---
 
-### Task 5: Turf-war voivodeship layer
+### Task 5: Turf-war Warsaw-district layer
 
 **Files:**
 - Create: `app/api/turf-war/route.ts`
@@ -721,8 +723,8 @@ gh issue comment 11 --body "Done: event pins render with happening-now highlight
 - Test: `tests/integration/turf-war.test.ts`
 
 **Interfaces:**
-- Consumes: `routes`, `crews` tables (read-only — **do not modify Track A's `app/api/routes/*` or `app/api/crews/*` files**), `public/map/poland-voivodeships.json`.
-- Produces: `pickOwner(counts: { crewId: string; crewName: string; voivodeship: string; count: number }[]): Record<string, { crewId: string; crewName: string; count: number }>` from `lib/turf-war/ownership.ts` — pure function that, given raw grouped counts (which may include multiple crews per voivodeship), returns one winner per voivodeship (highest count; a tie keeps whichever came first in the input array — document this as the tie-break rule, don't leave it undefined). `GET /api/turf-war` → `200` object keyed by voivodeship slug, e.g. `{ "malopolskie": { "crewId": "...", "crewName": "Iron Wolves", "count": 5 } }` — voivodeships with zero routes are simply absent from the object (not present with a null owner).
+- Consumes: `routes`, `crews` tables (read-only — **do not modify Track A's `app/api/routes/*` or `app/api/crews/*` files**), `public/map/warsaw-districts.json` (18 Warsaw district features — **not** `poland-voivodeships.json`).
+- Produces: `pickOwner(counts: { crewId: string; crewName: string; district: string; count: number }[]): Record<string, { crewId: string; crewName: string; count: number }>` from `lib/turf-war/ownership.ts` — pure function that, given raw grouped counts (which may include multiple crews per district), returns one winner per district (highest count; a tie keeps whichever came first in the input array — document this as the tie-break rule, don't leave it undefined). `GET /api/turf-war` → `200` object keyed by Warsaw district slug (e.g. `"srodmiescie"`, `"mokotow"` — the 18 slugs in `public/map/warsaw-districts.json`), e.g. `{ "srodmiescie": { "crewId": "...", "crewName": "Iron Wolves", "count": 5 } }` — districts with zero routes are simply absent from the object (not present with a null owner). Only routes with a non-null `routes.district` count (routes outside Warsaw are excluded entirely, not attributed to any district).
 
 - [ ] **Step 1: Write failing unit test for the pure ownership logic**
 
@@ -732,27 +734,27 @@ import { describe, it, expect } from 'vitest';
 import { pickOwner } from '@/lib/turf-war/ownership';
 
 describe('pickOwner', () => {
-  it('picks the crew with the highest count per voivodeship', () => {
+  it('picks the crew with the highest count per district', () => {
     const result = pickOwner([
-      { crewId: 'a', crewName: 'Alpha', voivodeship: 'mazowieckie', count: 3 },
-      { crewId: 'b', crewName: 'Beta', voivodeship: 'mazowieckie', count: 7 },
-      { crewId: 'a', crewName: 'Alpha', voivodeship: 'malopolskie', count: 2 },
+      { crewId: 'a', crewName: 'Alpha', district: 'srodmiescie', count: 3 },
+      { crewId: 'b', crewName: 'Beta', district: 'srodmiescie', count: 7 },
+      { crewId: 'a', crewName: 'Alpha', district: 'mokotow', count: 2 },
     ]);
-    expect(result.mazowieckie).toEqual({ crewId: 'b', crewName: 'Beta', count: 7 });
-    expect(result.malopolskie).toEqual({ crewId: 'a', crewName: 'Alpha', count: 2 });
+    expect(result.srodmiescie).toEqual({ crewId: 'b', crewName: 'Beta', count: 7 });
+    expect(result.mokotow).toEqual({ crewId: 'a', crewName: 'Alpha', count: 2 });
   });
 
-  it('omits voivodeships with no entries', () => {
-    const result = pickOwner([{ crewId: 'a', crewName: 'Alpha', voivodeship: 'slaskie', count: 1 }]);
-    expect(result.mazowieckie).toBeUndefined();
+  it('omits districts with no entries', () => {
+    const result = pickOwner([{ crewId: 'a', crewName: 'Alpha', district: 'wola', count: 1 }]);
+    expect(result.srodmiescie).toBeUndefined();
   });
 
   it('breaks ties by keeping the first entry seen', () => {
     const result = pickOwner([
-      { crewId: 'a', crewName: 'Alpha', voivodeship: 'lubelskie', count: 4 },
-      { crewId: 'b', crewName: 'Beta', voivodeship: 'lubelskie', count: 4 },
+      { crewId: 'a', crewName: 'Alpha', district: 'praga-polnoc', count: 4 },
+      { crewId: 'b', crewName: 'Beta', district: 'praga-polnoc', count: 4 },
     ]);
-    expect(result.lubelskie.crewId).toBe('a');
+    expect(result['praga-polnoc'].crewId).toBe('a');
   });
 });
 ```
@@ -761,15 +763,15 @@ describe('pickOwner', () => {
 
 Create `lib/turf-war/ownership.ts`:
 ```typescript
-type CrewCount = { crewId: string; crewName: string; voivodeship: string; count: number };
+type CrewCount = { crewId: string; crewName: string; district: string; count: number };
 type Owner = { crewId: string; crewName: string; count: number };
 
 export function pickOwner(counts: CrewCount[]): Record<string, Owner> {
   const result: Record<string, Owner> = {};
   for (const row of counts) {
-    const current = result[row.voivodeship];
+    const current = result[row.district];
     if (!current || row.count > current.count) {
-      result[row.voivodeship] = { crewId: row.crewId, crewName: row.crewName, count: row.count };
+      result[row.district] = { crewId: row.crewId, crewName: row.crewName, count: row.count };
     }
   }
   return result;
@@ -786,7 +788,7 @@ import { describe, it, expect } from 'vitest';
 import { GET as getTurfWar } from '@/app/api/turf-war/route';
 
 describe('turf-war API', () => {
-  it('returns an object keyed by voivodeship', async () => {
+  it('returns an object keyed by Warsaw district', async () => {
     const res = await getTurfWar();
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -807,18 +809,19 @@ import { pickOwner } from '@/lib/turf-war/ownership';
 
 export async function GET() {
   const result = await db.execute(sql`
-    SELECT r.voivodeship, c.id as "crewId", c.name as "crewName", COUNT(r.id)::int as count
+    SELECT r.district, c.id as "crewId", c.name as "crewName", COUNT(r.id)::int as count
     FROM routes r
     JOIN riders ri ON ri.id = r.owner_id
     JOIN crews c ON c.id = ri.crew_id
-    GROUP BY r.voivodeship, c.id, c.name
+    WHERE r.district IS NOT NULL
+    GROUP BY r.district, c.id, c.name
     ORDER BY count DESC
   `);
-  const owners = pickOwner(result.rows as { crewId: string; crewName: string; voivodeship: string; count: number }[]);
+  const owners = pickOwner(result.rows as { crewId: string; crewName: string; district: string; count: number }[]);
   return NextResponse.json(owners);
 }
 ```
-This query is read-only against `routes`/`riders`/`crews` — it does not modify or import any file under Track A's ownership, only reads the shared schema from `@/lib/db`.
+This query is read-only against `routes`/`riders`/`crews` — it does not modify or import any file under Track A's ownership, only reads the shared schema from `@/lib/db`. The `WHERE r.district IS NOT NULL` clause excludes routes outside Warsaw entirely (they have no district to attribute).
 
 - [ ] **Step 6: Run tests, confirm they pass.**
 
@@ -839,7 +842,7 @@ useEffect(() => {
 
   async function addTurfWarLayer() {
     const [geo, owners] = await Promise.all([
-      fetch('/map/poland-voivodeships.json').then((r) => r.json()),
+      fetch('/map/warsaw-districts.json').then((r) => r.json()),
       fetch('/api/turf-war').then((r) => r.json()),
     ]);
     const colored = {
@@ -867,7 +870,7 @@ useEffect(() => {
 ```
 (30-second refresh is deliberately slower than the 10-second presence poll — turf-war ownership changes far less often than rider positions, no need to hammer the endpoint.)
 
-- [ ] **Step 8: Manual verification** — with `npm run dev` running and at least one route+crew in the DB (create one via Track A's UI, or directly via `curl`/Postman against `/api/routes` with a valid token, if Track A isn't merged yet — coordinate with whoever has Track A running, or seed one manually for this check), confirm the voivodeship containing that route visibly fills with color on `/map`.
+- [ ] **Step 8: Manual verification** — with `npm run dev` running and at least one route+crew in the DB, where the route's `startLat`/`startLon` fall inside Warsaw so `district` is non-null (e.g. central Warsaw coordinates ~52.23, 21.01 — create one via Track A's UI, or directly via `curl`/Postman against `/api/routes` with a valid token, if Track A isn't merged yet), confirm the Warsaw district containing that route visibly fills with color on `/map`. A route outside Warsaw will correctly show no fill (its `district` is null) — that's expected, not a bug.
 
 - [ ] **Step 9: Code review (Haiku)** — confirm the SQL query only counts routes belonging to riders who have a crew (the `JOIN crews` with no `LEFT` means crewless riders' routes are correctly excluded from turf-war, not counted as an "unowned" bucket — confirm this is the intended behavior, which it is per the spec: turf-war is crew vs. crew).
 
@@ -877,10 +880,10 @@ useEffect(() => {
 
 ```bash
 git add app/api/turf-war lib/turf-war components/LiveMap.tsx tests/unit/turf-war tests/integration/turf-war.test.ts
-git commit -m "feat: turf-war voivodeship ownership layer (#12)"
+git commit -m "feat: turf-war Warsaw-district ownership layer (#18)"
 git push origin track-b
-gh issue comment 12 --body "Done: turf-war layer live on the map. Track B complete."
-gh pr create --base main --head track-b --title "Track B: buddy finder, events, presence, live map" --body "Closes #7, closes #8, closes #9, closes #10, closes #11, closes #12" 2>/dev/null || echo "PR already open, ensure its body lists all six closes."
+gh issue comment 18 --body "Done: turf-war layer (Warsaw districts) live on the map. Track B complete."
+gh pr create --base main --head track-b --title "Track B: buddy finder, events, presence, live map" --body "Closes #13, closes #14, closes #15, closes #16, closes #17, closes #18" 2>/dev/null || echo "PR already open, ensure its body lists all six closes."
 ```
 
 **FINAL STOP-AND-REVIEW CHECKPOINT:** Report to the user that Track B is complete: all six issues closed, PR open against `main`, all tests passing (`npx vitest run` full suite), Playwright smoke checks green, and the turf-war layer visibly renders when routes+crews exist. Do not merge into `main` yourself — Phase 4 (a separate plan) handles the merge and integration review alongside Track A.

@@ -17,10 +17,11 @@
 - **Branch:** work on a branch named `track-a` (create it from `main` at the start: `git checkout -b track-a`). Push to `track-a`, open PRs from `track-a` into `main` — do not push directly to `main`.
 - **GitHub is not optional bookkeeping — it is a required part of every task.** For each task below:
   1. Before starting, comment on the task's GitHub issue: `gh issue comment <number> --body "Starting: <task name>"` (or move it to "In Progress" on the project board if using `gh project item-edit`).
-  2. Every commit message must reference the issue: e.g. `git commit -m "feat: add rider settings API (#1)"`.
+  2. Every commit message must reference the issue: e.g. `git commit -m "feat: add rider settings API (#7)"`. **Issue numbers for this track are #7–#12** (Phase 0 already used #1–#6): Task 1→#7, Task 2→#8, Task 3→#9 (crew leaderboard) and #10 (individual leaderboard), Task 4→#11, Task 5→#12. The per-task `gh issue comment <n>`/`Closes #<n>` calls below have been updated to these numbers — don't use the smaller numbers that appear in earlier drafts of this reasoning.
   3. After finishing the task (tests passing, reviewed, simplified, smoke-tested), push and open/update a PR linked to the issue: `gh pr create --base main --head track-a --title "<task>" --body "Closes #<number>"` (open once, then just push more commits to update it for subsequent tasks, or open one PR per task — either is fine, but every PR body must say `Closes #<number>` for its issue).
   4. Comment on the issue that it's done, with a one-line summary of what was built.
   If `gh` CLI isn't available in your environment, do the equivalent via the GitHub web UI, but do not skip this — the user explicitly requires visible GitHub activity per task.
+- **Acceptance criteria checklist, required before every task (added 2026-08-28):** before starting any task below, its GitHub issue must have an "## Acceptance Criteria" checklist (GitHub `- [ ]` task-list syntax) derived from that task's own **Interfaces** section and test assertions — not a generic "tests pass" line. Issues #7–#12 (this track) were pre-filed in Phase 0 with acceptance criteria already added; if you find one missing it, add it via `gh issue edit <n> --body "..."` before writing code for that task. On finishing a task: re-verify against each criterion individually (run the actual test/command it names), check off (`- [x]`) each one that passed in the issue body, and post a completion comment stating pass/fail per criterion before closing the issue. Full mechanics: `.claude/rules/github-projects.md`.
 - Time budget: **Track A should take no more than 2.5 hours.** 6 tasks below — if any single task is running long, cut its scope (e.g. skip an edge case) rather than let it consume the whole budget. Report time spent at each checkpoint.
 - No Tailwind. Use the CSS custom properties already defined in `app/globals.css` (`--signal`, `--paper`, `--panel`, `--line`, etc.) and the `.panel` class for any card/container UI — don't invent a new visual language.
 - Every route handler that touches rider-owned data calls `requireAuth(req)` from `@/lib/auth/require-auth` and derives the acting rider from its return value — never trust a client-supplied rider/owner id in a request body.
@@ -173,10 +174,10 @@ Use `Agent` tool, `model: "haiku"`: review `app/api/profile/route.ts` for correc
 
 ```bash
 git add app/api/profile app/\(app\)/settings tests/integration/profile.test.ts tests/e2e/settings.spec.ts playwright.config.ts
-git commit -m "feat: rider settings API + page (#1)"
+git commit -m "feat: rider settings API + page (#7)"
 git push -u origin track-a
-gh pr create --base main --head track-a --title "Track A: rider settings" --body "Closes #1"
-gh issue comment 1 --body "Done: GET/PATCH /api/profile implemented, settings page live, tests passing."
+gh pr create --base main --head track-a --title "Track A: rider settings" --body "Closes #7"
+gh issue comment 7 --body "Done: GET/PATCH /api/profile implemented, settings page live, tests passing."
 ```
 
 **STOP-AND-REVIEW CHECKPOINT:** report status, time elapsed, and wait for confirmation before Task 2.
@@ -329,10 +330,10 @@ export async function POST(req: Request) {
 
 ```bash
 git add app/api/crews app/\(app\)/settings tests/integration/crews.test.ts tests/e2e/settings.spec.ts
-git commit -m "feat: crew create/join API + picker UI (#2)"
+git commit -m "feat: crew create/join API + picker UI (#8)"
 git push origin track-a
-gh pr create --base main --head track-a --title "Track A: crew create/join" --body "Closes #2" 2>/dev/null || gh pr comment --body "Adds crew create/join, closes #2"
-gh issue comment 2 --body "Done: crew create/join implemented and tested."
+gh pr create --base main --head track-a --title "Track A: crew create/join" --body "Closes #8" 2>/dev/null || gh pr comment --body "Adds crew create/join, closes #8"
+gh issue comment 8 --body "Done: crew create/join implemented and tested."
 ```
 
 **STOP-AND-REVIEW CHECKPOINT.**
@@ -449,10 +450,10 @@ test('leaderboard page renders both tables', async ({ page }) => {
 
 ```bash
 git add app/api/leaderboard lib/leaderboard app/\(app\)/leaderboard tests/integration/leaderboard.test.ts tests/e2e/leaderboard.spec.ts
-git commit -m "feat: crew and individual leaderboards (#3, #4)"
+git commit -m "feat: crew and individual leaderboards (#9, #10)"
 git push origin track-a
-gh issue comment 3 --body "Done: crew leaderboard live."
-gh issue comment 4 --body "Done: individual leaderboard live."
+gh issue comment 9 --body "Done: crew leaderboard live."
+gh issue comment 10 --body "Done: individual leaderboard live."
 ```
 
 **STOP-AND-REVIEW CHECKPOINT.**
@@ -466,9 +467,15 @@ gh issue comment 4 --body "Done: individual leaderboard live."
 - Create: `app/(app)/routes/new/page.tsx`
 - Test: `tests/integration/routes.test.ts`
 
+**SCOPE UPDATE (2026-08-28, added after this plan was written):** turf-war for the demo is
+Warsaw-district-based, not whole-Poland-voivodeship-based (see design spec addendum). This adds a
+**second, required** derivation to this task: `routes.district` (nullable) via `findWarsawDistrict(lat, lon)`
+from `@/lib/geo/voivodeship`, populated only when the route falls inside Warsaw (null everywhere
+else). This is additive — `voivodeship` is still always derived exactly as below, unchanged.
+
 **Interfaces:**
-- Consumes: `requireAuth`, `db`/`routes` schema, `findVoivodeship` from `@/lib/geo/voivodeship`.
-- Produces: `POST /api/routes` body `{ title, startLat, startLon, endLat, endLon, difficulty, bikeType, sceneryTags }` → `201` with the created row including server-derived `voivodeship`. Reject with `400` if `findVoivodeship` returns `null` (coordinates outside Poland) — **this is the one validation that matters most: never store a route with a null/client-supplied voivodeship.**
+- Consumes: `requireAuth`, `db`/`routes` schema, `findVoivodeship` **and `findWarsawDistrict`** from `@/lib/geo/voivodeship`.
+- Produces: `POST /api/routes` body `{ title, startLat, startLon, endLat, endLon, difficulty, bikeType, sceneryTags }` → `201` with the created row including server-derived `voivodeship` **and `district` (nullable, set via `findWarsawDistrict(startLat, startLon)`, null outside Warsaw)**. Reject with `400` if `findVoivodeship` returns `null` (coordinates outside Poland) — **this is the one validation that matters most: never store a route with a null/client-supplied voivodeship.** `district` being `null` is not an error — most of Poland has no district.
 - Enum values (fixed, copy exactly): `difficulty`: `"easy" | "moderate" | "hard"`. `bikeType`: `"adventure" | "sport" | "cruiser" | "naked" | "touring"`. `sceneryTags`: free-text comma-separated string for this hackathon scope (e.g. `"forest,mountains"`) — no separate tags table.
 
 - [ ] **Step 1: Write failing integration test**
@@ -531,7 +538,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { routes } from '@/lib/db/schema';
 import { requireAuth, AuthError } from '@/lib/auth/require-auth';
-import { findVoivodeship } from '@/lib/geo/voivodeship';
+import { findVoivodeship, findWarsawDistrict } from '@/lib/geo/voivodeship';
 
 export async function POST(req: Request) {
   try {
@@ -541,8 +548,9 @@ export async function POST(req: Request) {
     if (!voivodeship) {
       return NextResponse.json({ error: 'Route start point is outside Poland' }, { status: 400 });
     }
+    const district = findWarsawDistrict(startLat, startLon); // null outside Warsaw — not an error
     const [route] = await db.insert(routes).values({
-      ownerId: riderId, title, startLat, startLon, endLat, endLon, difficulty, bikeType, sceneryTags, voivodeship,
+      ownerId: riderId, title, startLat, startLon, endLat, endLon, difficulty, bikeType, sceneryTags, voivodeship, district,
     }).returning();
     return NextResponse.json(route, { status: 201 });
   } catch (e) {
@@ -581,9 +589,9 @@ test('route creation form renders', async ({ page }) => {
 
 ```bash
 git add app/api/routes app/\(app\)/routes/new tests/integration/routes.test.ts tests/e2e/routes-new.spec.ts
-git commit -m "feat: route creation with server-derived voivodeship (#5)"
+git commit -m "feat: route creation with server-derived voivodeship (#11)"
 git push origin track-a
-gh issue comment 5 --body "Done: route creation live, voivodeship always server-derived."
+gh issue comment 11 --body "Done: route creation live, voivodeship (and Warsaw district, when applicable) always server-derived."
 ```
 
 **STOP-AND-REVIEW CHECKPOINT.**
@@ -718,10 +726,10 @@ test('routes list page renders', async ({ page }) => {
 
 ```bash
 git add app/api/routes app/\(app\)/routes/page.tsx tests/integration/ratings.test.ts tests/e2e/routes-list.spec.ts
-git commit -m "feat: route ratings + browse list (#6)"
+git commit -m "feat: route ratings + browse list (#12)"
 git push origin track-a
-gh issue comment 6 --body "Done: ratings + route browse live. Track A complete."
-gh pr create --base main --head track-a --title "Track A: community & content (rider settings, crews, leaderboards, routes, ratings)" --body "Closes #1, closes #2, closes #3, closes #4, closes #5, closes #6" 2>/dev/null || echo "PR already open, ensure its body lists all six closes."
+gh issue comment 12 --body "Done: ratings + route browse live. Track A complete."
+gh pr create --base main --head track-a --title "Track A: community & content (rider settings, crews, leaderboards, routes, ratings)" --body "Closes #7, closes #8, closes #9, closes #10, closes #11, closes #12" 2>/dev/null || echo "PR already open, ensure its body lists all six closes."
 ```
 
 **FINAL STOP-AND-REVIEW CHECKPOINT:** Report to the user that Track A is complete: all six issues closed, PR open against `main`, all tests passing (`npx vitest run` full suite), Playwright smoke checks green. Do not merge into `main` yourself — Phase 4 (a separate plan) handles the merge and integration review alongside Track B.
