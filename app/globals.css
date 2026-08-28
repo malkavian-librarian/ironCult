@@ -178,8 +178,8 @@ button:hover { background: var(--signal-strong); }
 }
 
 .presence-dot {
-  width: 14px;
-  height: 14px;
+  width: 9px;
+  height: 9px;
   border: 2px solid var(--asphalt);
   border-radius: 50%;
   background: var(--presence-color, var(--signal));
@@ -194,8 +194,8 @@ button:hover { background: var(--signal-strong); }
    quantity still reads clearly as "many riders" without the frame-rate cost. Not clickable,
    so they never intercept taps meant for real markers. */
 .presence-dot-sim {
-  width: 14px;
-  height: 14px;
+  width: 9px;
+  height: 9px;
   border-width: 2px;
   box-shadow: 0 0 0 1px var(--paper);
   animation: none;
@@ -234,8 +234,8 @@ button:hover { background: var(--signal-strong); }
 }
 
 .presence-dot-self {
-  width: 28px;
-  height: 28px;
+  width: 18px;
+  height: 18px;
   border-width: 3px;
   z-index: 2;
 }
