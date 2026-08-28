@@ -1,23 +1,35 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { crewColor } from '@/lib/crew-color';
+import { createWarsawStyle, WARSAW_BASEMAP_SOURCE_ID, WARSAW_CENTER, WARSAW_ZOOM } from '@/lib/map/warsaw-style';
 
-type PresenceRow = { riderId: string; displayName: string; lat: number; lon: number };
+type PresenceRow = { riderId: string; displayName: string; lat: number; lon: number; crewId: string | null; crewName: string | null };
 type EventRow = { id: string; title: string; type: string; lat: number; lon: number; happeningNow: boolean };
 type MapLibreModule = typeof import('maplibre-gl');
 type MapLibreMap = import('maplibre-gl').Map;
 type MapLibreMarker = import('maplibre-gl').Marker;
 type MapLibreGeoJSONSource = import('maplibre-gl').GeoJSONSource;
+type PmtilesModule = typeof import('pmtiles');
+type PmtilesProtocol = InstanceType<PmtilesModule['Protocol']>;
 
 type GeoFeature = { properties: Record<string, unknown> & { name: string } };
 type GeoCollection = { type: 'FeatureCollection'; features: GeoFeature[] };
 type Owner = { crewId: string; crewName: string; count: number };
 type TurfWarData = Parameters<MapLibreGeoJSONSource['setData']>[0];
 
-function hashToHue(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) hash = (hash * 31 + str.charCodeAt(i)) % 360;
-  return hash;
+let pmtilesProtocol: PmtilesProtocol | null = null;
+
+function ensurePmtilesProtocol(maplibregl: MapLibreModule, Protocol: PmtilesModule['Protocol']) {
+  if (pmtilesProtocol) return;
+  const protocol = new Protocol();
+  try {
+    maplibregl.addProtocol('pmtiles', protocol.tile);
+    pmtilesProtocol = protocol;
+  } catch (err) {
+    if (String(err).match(/already|exist|registered/i)) return;
+    throw err;
+  }
 }
 
 export function LiveMap() {
@@ -29,6 +41,7 @@ export function LiveMap() {
   const [eventRows, setEventRows] = useState<EventRow[]>([]);
   const [mapReady, setMapReady] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [basemapLoaded, setBasemapLoaded] = useState(false);
   const [turfLoaded, setTurfLoaded] = useState(false);
 
   useEffect(() => {
@@ -36,24 +49,33 @@ export function LiveMap() {
     let map: MapLibreMap | null = null;
 
     async function init() {
-      const maplibregl: MapLibreModule = await import('maplibre-gl');
+      const [maplibregl, { Protocol }]: [MapLibreModule, PmtilesModule] = await Promise.all([
+        import('maplibre-gl'),
+        import('pmtiles'),
+      ]);
       if (cancelled || !containerRef.current) return;
+      maplibregl.setWorkerUrl('/maplibre-gl-worker.mjs');
+      ensurePmtilesProtocol(maplibregl, Protocol);
       map = new maplibregl.Map({
         container: containerRef.current,
-        style: {
-          version: 8,
-          sources: {},
-          layers: [{ id: 'background', type: 'background', paint: { 'background-color': '#10100f' } }],
-        },
-        center: [19.1, 52.0],
-        zoom: 6,
+        style: createWarsawStyle(),
+        center: WARSAW_CENTER,
+        zoom: WARSAW_ZOOM,
         touchPitch: false,
         dragRotate: false,
       });
       maplibreRef.current = maplibregl;
       mapRef.current = map;
       setMapReady(true);
-      map.once('load', () => setMapLoaded(true));
+      map.once('load', () => {
+        setMapLoaded(true);
+        setBasemapLoaded(map?.isSourceLoaded(WARSAW_BASEMAP_SOURCE_ID) ?? false);
+      });
+      map.on('sourcedata', (event) => {
+        if (event.sourceId === WARSAW_BASEMAP_SOURCE_ID) {
+          setBasemapLoaded(map?.isSourceLoaded(WARSAW_BASEMAP_SOURCE_ID) ?? false);
+        }
+      });
     }
 
     init().catch(() => {
@@ -99,15 +121,17 @@ export function LiveMap() {
   useEffect(() => {
     const map = mapRef.current;
     const maplibregl = maplibreRef.current;
-    if (!map || !maplibregl) return;
+    if (!map || !maplibregl || !mapLoaded) return;
 
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
 
     for (const rider of presenceRows) {
       const el = document.createElement('div');
-      el.style.cssText = 'width:16px;height:16px;border-radius:50%;background:var(--signal);border:2px solid var(--paper);';
-      el.title = rider.displayName;
+      el.className = 'presence-dot';
+      el.style.setProperty('--presence-color', crewColor(rider.crewId));
+      el.title = rider.crewName ? `${rider.displayName} - ${rider.crewName}` : rider.displayName;
+      el.dataset.crewId = rider.crewId ?? 'uncrewed';
       markersRef.current.push(new maplibregl.Marker({ element: el }).setLngLat([rider.lon, rider.lat]).addTo(map));
     }
 
@@ -117,7 +141,7 @@ export function LiveMap() {
       el.title = `${event.title}${event.happeningNow ? ' (happening now)' : ''}`;
       markersRef.current.push(new maplibregl.Marker({ element: el }).setLngLat([event.lon, event.lat]).addTo(map));
     }
-  }, [presenceRows, eventRows, mapReady]);
+  }, [presenceRows, eventRows, mapReady, mapLoaded]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -145,7 +169,7 @@ export function LiveMap() {
               ...f,
               properties: {
                 ...f.properties,
-                fillColor: owner ? `hsl(${hashToHue(owner.crewId)}, 55%, 32%)` : '#181714',
+                fillColor: crewColor(owner?.crewId, 32),
                 ownerName: owner?.crewName ?? '',
               },
             };
@@ -171,5 +195,14 @@ export function LiveMap() {
     return () => { cancelled = true; clearInterval(interval); };
   }, [mapLoaded]);
 
-  return <div ref={containerRef} style={{ width: '100%', height: '100dvh' }} data-testid="live-map" data-map-loaded={mapLoaded ? 'true' : 'false'} data-turf-loaded={turfLoaded ? 'true' : 'false'} />;
+  return (
+    <div
+      ref={containerRef}
+      className="live-map-shell"
+      data-testid="live-map"
+      data-map-loaded={mapLoaded ? 'true' : 'false'}
+      data-basemap-loaded={basemapLoaded ? 'true' : 'false'}
+      data-turf-loaded={turfLoaded ? 'true' : 'false'}
+    />
+  );
 }

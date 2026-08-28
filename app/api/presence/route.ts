@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { presence, riders } from '@/lib/db/schema';
+import { crews, presence, riders } from '@/lib/db/schema';
 import { requireAuth, AuthError } from '@/lib/auth/require-auth';
 import { isOnline } from '@/lib/presence/online-window';
 
@@ -25,12 +25,28 @@ export async function POST(req: Request) {
 
 export async function GET() {
   const rows = await db
-    .select({ riderId: presence.riderId, displayName: riders.displayName, lat: presence.lat, lon: presence.lon, updatedAt: presence.updatedAt })
+    .select({
+      riderId: presence.riderId,
+      displayName: riders.displayName,
+      lat: presence.lat,
+      lon: presence.lon,
+      updatedAt: presence.updatedAt,
+      crewId: riders.crewId,
+      crewName: crews.name,
+    })
     .from(presence)
-    .innerJoin(riders, eq(presence.riderId, riders.id));
+    .innerJoin(riders, eq(presence.riderId, riders.id))
+    .leftJoin(crews, eq(riders.crewId, crews.id));
   return NextResponse.json(
     rows
       .filter((r) => isOnline(r.updatedAt))
-      .map((r) => ({ riderId: r.riderId, displayName: r.displayName, lat: r.lat, lon: r.lon }))
+      .map((r) => ({
+        riderId: r.riderId,
+        displayName: r.displayName,
+        lat: r.lat,
+        lon: r.lon,
+        crewId: r.crewId,
+        crewName: r.crewName,
+      }))
   );
 }
