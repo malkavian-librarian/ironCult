@@ -7,6 +7,18 @@ type EventRow = { id: string; title: string; type: string; lat: number; lon: num
 type MapLibreModule = typeof import('maplibre-gl');
 type MapLibreMap = import('maplibre-gl').Map;
 type MapLibreMarker = import('maplibre-gl').Marker;
+type MapLibreGeoJSONSource = import('maplibre-gl').GeoJSONSource;
+
+type GeoFeature = { properties: Record<string, unknown> & { name: string } };
+type GeoCollection = { type: 'FeatureCollection'; features: GeoFeature[] };
+type Owner = { crewId: string; crewName: string; count: number };
+type TurfWarData = Parameters<MapLibreGeoJSONSource['setData']>[0];
+
+function hashToHue(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) hash = (hash * 31 + str.charCodeAt(i)) % 360;
+  return hash;
+}
 
 export function LiveMap() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -17,6 +29,7 @@ export function LiveMap() {
   const [eventRows, setEventRows] = useState<EventRow[]>([]);
   const [mapReady, setMapReady] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [turfLoaded, setTurfLoaded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -104,5 +117,57 @@ export function LiveMap() {
     }
   }, [presenceRows, eventRows, mapReady]);
 
-  return <div ref={containerRef} style={{ width: '100%', height: '70vh' }} data-testid="live-map" data-map-loaded={mapLoaded ? 'true' : 'false'} />;
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    let cancelled = false;
+
+    async function refreshTurfWar() {
+      try {
+        const m = mapRef.current;
+        if (!m || cancelled) return;
+        const [geoRes, ownersRes] = await Promise.all([
+          fetch('/map/warsaw-districts.json'),
+          fetch('/api/turf-war'),
+        ]);
+        if (!geoRes.ok || !ownersRes.ok) return;
+        const geo = (await geoRes.json()) as GeoCollection;
+        const owners = (await ownersRes.json()) as Record<string, Owner>;
+        if (cancelled || !mapRef.current) return;
+
+        const colored = {
+          ...geo,
+          features: geo.features.map((f) => {
+            const owner = owners[f.properties.name as string];
+            return {
+              ...f,
+              properties: {
+                ...f.properties,
+                fillColor: owner ? `hsl(${hashToHue(owner.crewId)}, 55%, 32%)` : '#181714',
+                ownerName: owner?.crewName ?? '',
+              },
+            };
+          }),
+        } as unknown as TurfWarData;
+
+        const source = mapRef.current.getSource('turf-war') as MapLibreGeoJSONSource | undefined;
+        if (source) {
+          source.setData(colored);
+        } else {
+          mapRef.current.addSource('turf-war', { type: 'geojson', data: colored });
+          mapRef.current.addLayer({ id: 'turf-war-fill', type: 'fill', source: 'turf-war', paint: { 'fill-color': ['get', 'fillColor'], 'fill-opacity': 0.55 } });
+          mapRef.current.addLayer({ id: 'turf-war-outline', type: 'line', source: 'turf-war', paint: { 'line-color': 'rgba(243,239,230,0.4)', 'line-width': 1 } });
+        }
+        setTurfLoaded(true);
+      } catch {
+        // transient fetch error or map disposed — next interval tick retries
+      }
+    }
+
+    if (mapLoaded) refreshTurfWar();
+    const interval = setInterval(refreshTurfWar, 30000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [mapLoaded]);
+
+  return <div ref={containerRef} style={{ width: '100%', height: '70vh' }} data-testid="live-map" data-map-loaded={mapLoaded ? 'true' : 'false'} data-turf-loaded={turfLoaded ? 'true' : 'false'} />;
 }
