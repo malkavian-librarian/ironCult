@@ -26,7 +26,7 @@ describe('district color palette', () => {
     expect(Object.keys(DISTRICT_COLORS).sort()).toEqual([...names].sort());
   });
 
-  it('uses dark cyberpunk HUD district colors with very high fill opacity and a neutral fallback', () => {
+  it('uses dark cyberpunk HUD district colors with low fill opacity (streets/bikers visible) and a neutral fallback', () => {
     const colors = Object.values(DISTRICT_COLORS);
     const parsedColors = colors.map(parseHsl);
     const hues = parsedColors.map((color) => color.hue);
@@ -47,6 +47,6 @@ describe('district color palette', () => {
     expect(districtColor('missing')).toBe('hsl(0, 0%, 26%)');
     expect(districtColor(null)).toBe('hsl(0, 0%, 26%)');
     expect(districtColor(undefined)).toBe('hsl(0, 0%, 26%)');
-    expect(DISTRICT_FILL_OPACITY).toBeGreaterThanOrEqual(0.96);
+    expect(DISTRICT_FILL_OPACITY).toBeLessThanOrEqual(0.35);
   });
 });

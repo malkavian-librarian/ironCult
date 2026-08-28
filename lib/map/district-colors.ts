@@ -1,4 +1,4 @@
-export const DISTRICT_FILL_OPACITY = 0.98;
+export const DISTRICT_FILL_OPACITY = 0.28;
 
 // Dark neon fills are intentional: the map should read like a cyberpunk HUD, not pastel zones.
 export const DISTRICT_COLORS: Record<string, string> = {
