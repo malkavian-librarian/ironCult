@@ -70,7 +70,7 @@ export default function BuddyFinderPage() {
       <h1 style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.06em' }}>BUDDY FINDER</h1>
 
       <section className="panel" aria-label="Filters">
-        <div className="filter-row" style={{ alignItems: 'flex-end' }}>
+        <div className="filter-row">
           <label style={{ display: 'grid', gap: '0.25rem' }}>
             <span>Voivodeship</span>
             <select value={filterVoivodeship} onChange={(e) => setFilterVoivodeship(e.target.value)} style={{ minHeight: '42px' }}>

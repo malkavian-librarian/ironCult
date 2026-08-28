@@ -85,6 +85,30 @@ input, select, textarea {
   flex-shrink: 0;
 }
 
+.rating-stars {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.rating-star {
+  flex: 1;
+  min-height: 56px;
+  font-size: 1.6rem;
+  line-height: 1;
+  background: var(--tar);
+  border: 1px solid var(--line);
+  color: var(--mist);
+  border-radius: 8px;
+}
+
+.rating-star-filled {
+  color: var(--visor);
+}
+
+.rating-star:hover {
+  background: color-mix(in srgb, var(--visor) 18%, var(--tar));
+}
+
 .leaderboard-columns {
   display: flex;
   flex-direction: column;
@@ -95,6 +119,7 @@ input, select, textarea {
 .filter-row {
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   gap: 0.5rem;
   min-width: 0;
 }
@@ -405,5 +430,5 @@ button:hover { background: var(--signal-strong); }
   .leaderboard-columns > .panel {
     flex: 1 1 320px;
   }
-  .filter-row { flex-direction: row; }
+  .filter-row { flex-direction: row; align-items: flex-end; }
 }
