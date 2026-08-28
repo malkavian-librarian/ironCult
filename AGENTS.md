@@ -20,6 +20,11 @@ first — it's the canonical index and `@`-imports this file.
 track's plan doc under `docs/superpowers/plans/` → `.claude/rules/github-projects.md` (GitHub
 issue/acceptance-criteria workflow, required before every task).
 
+Pitch-day flow and what the demo needs to actually show:
+[docs/demo-prep-checklist.md](docs/demo-prep-checklist.md) — Track B's turf-war layer is the
+planned centerpiece of the demo, so know what it needs (seeded route+crew data inside Warsaw)
+before considering that task done.
+
 **Non-negotiable, repo-wide:**
 - Never push directly to `main` from Track A/B — work on `track-a`/`track-b`, PR into `main`,
   `Closes #<issue>` in the PR body.

@@ -8,11 +8,25 @@ ironCult is a minimalistic, Poland-only motorcycle social network (Next.js App R
 TypeScript, Neon Postgres/Drizzle, hand-rolled JWT auth, MapLibre GL). Riders log routes, rate
 each other's routes, join crews, see leaderboards, post buddy-finder requests, browse events, and
 see a live map of Poland with rider presence, events, and a "turf war" crew-ownership layer —
-scoped to Warsaw districts for the demo (see Gotchas). Built under a 6-hour hackathon time
-budget; Vercel-hosted at https://ironcult.vercel.app.
+scoped to Warsaw districts for the demo (see Gotchas). Built in a single **8-hour** day (9:00–17:00)
+at BRAVE UnAIted, 28.08.2026, Warsaw; Vercel-hosted at https://ironcult.vercel.app. User-facing
+overview: [README.md](README.md). Pitch-day logistics: [docs/demo-prep-checklist.md](docs/demo-prep-checklist.md).
 
-- Run: `npm run dev` · Test: `npx vitest run` · Deploy: Vercel (via `vercel:vercel-cli` /
-  `vercel:deploy` skill)
+**Note:** the plan docs under `docs/superpowers/plans/` still say "6-hour" in a few places —
+that's stale, inherited from an early draft before the actual Guide Book was read; the real
+budget is 8 hours per the official schedule. Not worth a mass find-replace mid-hackathon; just
+don't trust the "6-hour" number if you see it there.
+
+### Quick start
+
+```powershell
+npm install
+npx drizzle-kit migrate   # first run only, or after a schema change
+npm run dev                # http://localhost:3000
+npx vitest run              # unit + integration (hits real DATABASE_URL, no mocking)
+npx playwright test         # local UI smoke checks (needs `npm run dev` running separately)
+```
+
 - Full design rationale, scope cuts, data model, and phase/track breakdown:
   [docs/superpowers/specs/2026-08-28-ironcult-design.md](docs/superpowers/specs/2026-08-28-ironcult-design.md)
 - Phase/track implementation plans: [docs/superpowers/plans/](docs/superpowers/plans/)
@@ -20,6 +34,18 @@ budget; Vercel-hosted at https://ironcult.vercel.app.
   `phase4-integration-review.md`)
 - Repo: https://github.com/malkavian-librarian/ironCult · Project board:
   https://github.com/users/malkavian-librarian/projects/1/views/1
+
+### Directory map
+
+```
+app/            Next.js App Router pages + API route handlers
+lib/            Shared server logic: db, auth, geo helpers (lib/geo/voivodeship.ts), domain queries
+components/     Shared React components (NavBar, LiveMap, PresenceToggle, ...)
+public/map/     Bundled GeoJSON boundaries (poland-voivodeships.json, warsaw-districts.json)
+tests/          Vitest (unit/, integration/) and Playwright (e2e/) tests
+docs/           Design spec, implementation plans, demo-prep checklist, market research
+.claude/rules/  Auto-loaded workflow rules (GitHub issues/acceptance-criteria/board)
+```
 
 ---
 
