@@ -2,13 +2,38 @@
 import { useEffect, useRef, useState } from 'react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { crewColor } from '@/lib/crew-color';
+import { DISTRICT_FILL_OPACITY, districtColor } from '@/lib/map/district-colors';
 import { createWarsawStyle, WARSAW_BASEMAP_SOURCE_ID, WARSAW_CENTER, WARSAW_ZOOM } from '@/lib/map/warsaw-style';
 
-type PresenceRow = { riderId: string; displayName: string; lat: number; lon: number; crewId: string | null; crewName: string | null };
-type EventRow = { id: string; title: string; type: string; lat: number; lon: number; happeningNow: boolean };
+type PresenceRow = {
+  riderId: string;
+  displayName: string;
+  lat: number;
+  lon: number;
+  crewId: string | null;
+  crewName: string | null;
+  motorcycle?: string;
+  rank?: string;
+  clubName?: string;
+  avatarUrl?: string;
+  markerColor?: string;
+  isCurrentDemoUser?: boolean;
+};
+type EventRow = {
+  id: string;
+  title: string;
+  type: string;
+  lat: number;
+  lon: number;
+  happeningNow: boolean;
+  district?: string | null;
+  districtColor?: string;
+  checkedInCount?: number;
+};
 type MapLibreModule = typeof import('maplibre-gl');
 type MapLibreMap = import('maplibre-gl').Map;
 type MapLibreMarker = import('maplibre-gl').Marker;
+type MapLibrePopup = import('maplibre-gl').Popup;
 type MapLibreGeoJSONSource = import('maplibre-gl').GeoJSONSource;
 type PmtilesModule = typeof import('pmtiles');
 type PmtilesProtocol = InstanceType<PmtilesModule['Protocol']>;
@@ -30,6 +55,69 @@ function ensurePmtilesProtocol(maplibregl: MapLibreModule, Protocol: PmtilesModu
     if (String(err).match(/already|exist|registered/i)) return;
     throw err;
   }
+}
+
+function escapeHtml(text: string | null | undefined): string {
+  return (text ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function createRiderMarkerElement(rider: PresenceRow): HTMLButtonElement {
+  const el = document.createElement('button');
+  el.type = 'button';
+  el.className = rider.isCurrentDemoUser ? 'presence-dot presence-dot-self' : 'presence-dot';
+  el.dataset.riderId = rider.riderId;
+  el.dataset.crewId = rider.crewId ?? 'guest';
+  el.dataset.currentDemoUser = rider.isCurrentDemoUser ? 'true' : 'false';
+  el.style.setProperty('--presence-color', rider.markerColor || crewColor(rider.crewId));
+  el.setAttribute('aria-label', `Open rider details for ${rider.displayName}`);
+  return el;
+}
+
+function createEventMarkerElement(event: EventRow): HTMLButtonElement {
+  const el = document.createElement('button');
+  el.type = 'button';
+  el.className = event.happeningNow ? 'event-marker event-marker-live' : 'event-marker';
+  el.dataset.eventId = event.id;
+  el.style.setProperty('--event-color', event.districtColor || 'var(--visor)');
+  el.setAttribute('aria-label', `Open event details for ${event.title}`);
+  return el;
+}
+
+function riderPopupHtml(rider: PresenceRow): string {
+  const rank = rider.rank ?? 'Rider';
+  const club = rider.clubName ?? rider.crewName ?? 'Guest rider';
+  const motorcycle = rider.motorcycle ?? 'Motorcycle not set';
+  const avatar = rider.avatarUrl
+    ? `<img alt="" src="${escapeHtml(rider.avatarUrl)}" />`
+    : '';
+  return `<article data-testid="rider-card" class="map-card rider-card">
+    ${avatar}
+    <p class="map-card-kicker">${escapeHtml(rank)} - ${escapeHtml(club)}</p>
+    <h3>${escapeHtml(rider.displayName)}</h3>
+    <dl>
+      <dt>ID</dt><dd>${escapeHtml(rider.riderId)}</dd>
+      <dt>Motorcycle</dt><dd>${escapeHtml(motorcycle)}</dd>
+    </dl>
+  </article>`;
+}
+
+function eventPopupHtml(event: EventRow): string {
+  const district = event.district ?? 'Unknown';
+  const kicker = `${district}${event.happeningNow ? ' - happening now' : ''}`;
+  const checkedIn = event.checkedInCount ?? 0;
+  return `<article data-testid="event-card" class="map-card event-card">
+    <p class="map-card-kicker">${escapeHtml(kicker)}</p>
+    <h3>${escapeHtml(event.title)}</h3>
+    <dl>
+      <dt>Type</dt><dd>${escapeHtml(event.type)}</dd>
+      <dt>Checked in</dt><dd>${checkedIn} riders</dd>
+    </dl>
+  </article>`;
 }
 
 export function LiveMap() {
@@ -127,19 +215,19 @@ export function LiveMap() {
     markersRef.current = [];
 
     for (const rider of presenceRows) {
-      const el = document.createElement('div');
-      el.className = 'presence-dot';
-      el.style.setProperty('--presence-color', crewColor(rider.crewId));
-      el.title = rider.crewName ? `${rider.displayName} - ${rider.crewName}` : rider.displayName;
-      el.dataset.crewId = rider.crewId ?? 'uncrewed';
-      markersRef.current.push(new maplibregl.Marker({ element: el }).setLngLat([rider.lon, rider.lat]).addTo(map));
+      const el = createRiderMarkerElement(rider);
+      const popup = new maplibregl.Popup({ maxWidth: '320px', closeButton: true }).setHTML(riderPopupHtml(rider));
+      markersRef.current.push(
+        new maplibregl.Marker({ element: el }).setLngLat([rider.lon, rider.lat]).setPopup(popup).addTo(map)
+      );
     }
 
     for (const event of eventRows) {
-      const el = document.createElement('div');
-      el.style.cssText = `width:18px;height:18px;border-radius:2px;background:${event.happeningNow ? 'var(--visor)' : 'var(--concrete)'};border:2px solid var(--paper);`;
-      el.title = `${event.title}${event.happeningNow ? ' (happening now)' : ''}`;
-      markersRef.current.push(new maplibregl.Marker({ element: el }).setLngLat([event.lon, event.lat]).addTo(map));
+      const el = createEventMarkerElement(event);
+      const popup = new maplibregl.Popup({ maxWidth: '320px', closeButton: true }).setHTML(eventPopupHtml(event));
+      markersRef.current.push(
+        new maplibregl.Marker({ element: el }).setLngLat([event.lon, event.lat]).setPopup(popup).addTo(map)
+      );
     }
   }, [presenceRows, eventRows, mapReady, mapLoaded]);
 
@@ -169,7 +257,7 @@ export function LiveMap() {
               ...f,
               properties: {
                 ...f.properties,
-                fillColor: crewColor(owner?.crewId, 32),
+                fillColor: districtColor(f.properties.name as string),
                 ownerName: owner?.crewName ?? '',
               },
             };
@@ -181,7 +269,7 @@ export function LiveMap() {
           source.setData(colored);
         } else {
           mapRef.current.addSource('turf-war', { type: 'geojson', data: colored });
-          mapRef.current.addLayer({ id: 'turf-war-fill', type: 'fill', source: 'turf-war', paint: { 'fill-color': ['get', 'fillColor'], 'fill-opacity': 0.65 } });
+          mapRef.current.addLayer({ id: 'turf-war-fill', type: 'fill', source: 'turf-war', paint: { 'fill-color': ['get', 'fillColor'], 'fill-opacity': DISTRICT_FILL_OPACITY } });
           mapRef.current.addLayer({ id: 'turf-war-outline', type: 'line', source: 'turf-war', paint: { 'line-color': 'rgba(243,239,230,0.4)', 'line-width': 1 } });
         }
         setTurfLoaded(true);

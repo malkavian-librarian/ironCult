@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
 import { eq, and, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { events } from '@/lib/db/schema';
+import { events, presence } from '@/lib/db/schema';
 import { requireAuth, AuthError } from '@/lib/auth/require-auth';
 import { isHappeningNow } from '@/lib/events/happening-now';
+import { findWarsawDistrict } from '@/lib/geo/voivodeship';
+import { countNearbyRiders } from '@/lib/map/checkins';
+import { districtColor } from '@/lib/map/district-colors';
+import { isOnline } from '@/lib/presence/online-window';
 
 export async function POST(req: Request) {
   try {
@@ -35,5 +39,26 @@ export async function GET(req: Request) {
     where: conditions.length ? and(...conditions) : undefined,
     orderBy: (e, { asc }) => asc(e.startsAt),
   });
-  return NextResponse.json(rows.map((e) => ({ ...e, happeningNow: isHappeningNow(e.startsAt) })));
+
+  const presenceRows = await db
+    .select({
+      lat: presence.lat,
+      lon: presence.lon,
+      updatedAt: presence.updatedAt,
+    })
+    .from(presence);
+  const onlinePresenceRows = presenceRows
+    .filter((row) => isOnline(row.updatedAt))
+    .map(({ lat, lon }) => ({ lat, lon }));
+
+  return NextResponse.json(rows.map((e) => {
+    const district = findWarsawDistrict(e.lat, e.lon);
+    return {
+      ...e,
+      happeningNow: isHappeningNow(e.startsAt),
+      district,
+      districtColor: districtColor(district),
+      checkedInCount: countNearbyRiders({ lat: e.lat, lon: e.lon }, onlinePresenceRows),
+    };
+  }));
 }

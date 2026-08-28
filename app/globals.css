@@ -50,6 +50,7 @@ input, select, textarea {
   min-height: var(--touch-min);
   font-size: 16px;
   font-family: inherit;
+  min-width: 0;
 }
 
 .leaderboard-columns {
@@ -63,6 +64,26 @@ input, select, textarea {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  min-width: 0;
+}
+
+.filter-row > * {
+  min-width: 0;
+}
+
+main {
+  overflow-x: hidden;
+}
+
+form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+form label {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
 }
 
 button {
@@ -130,7 +151,112 @@ button:hover { background: var(--signal-strong); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .presence-dot { animation: none; }
+  .presence-dot, .event-marker-live { animation: none; }
+}
+
+.presence-dot,
+.event-marker {
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+  min-width: 0;
+  min-height: 0;
+}
+
+.presence-dot-self {
+  width: 30px;
+  height: 30px;
+  border-width: 3px;
+  z-index: 2;
+}
+
+.event-marker {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: var(--event-color, var(--visor));
+  box-shadow: 0 0 0 2px var(--paper), 0 0 22px color-mix(in srgb, var(--event-color, var(--visor)) 72%, transparent);
+}
+
+.event-marker-live {
+  animation: presence-pulse 1.2s ease-out infinite;
+}
+
+.maplibregl-popup .maplibregl-popup-content {
+  background: #080807;
+  color: var(--paper);
+  padding: 0;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+
+.maplibregl-popup.maplibregl-popup-anchor-bottom .maplibregl-popup-tip { border-top-color: #080807; }
+.maplibregl-popup.maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bottom-color: #080807; }
+.maplibregl-popup.maplibregl-popup-anchor-left .maplibregl-popup-tip { border-right-color: #080807; }
+.maplibregl-popup.maplibregl-popup-anchor-right .maplibregl-popup-tip { border-left-color: #080807; }
+
+.maplibregl-popup .maplibregl-popup-close-button {
+  width: 32px;
+  height: 32px;
+  font-size: 1.3rem;
+  color: var(--paper);
+  right: 0.15rem;
+  top: 0.15rem;
+}
+
+.maplibregl-popup .maplibregl-popup-close-button:hover {
+  background: rgba(243, 239, 230, 0.12);
+  border-radius: 50%;
+}
+
+.map-card {
+  width: min(280px, 80vw);
+  color: var(--paper);
+  padding: 1rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.map-card img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.map-card h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.map-card-kicker {
+  margin: 0;
+  color: var(--visor);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.map-card dl {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  font-family: var(--font-data);
+}
+
+.map-card dt {
+  color: var(--mist);
+  display: block;
+  margin-top: 0.25rem;
+}
+
+.map-card dt:first-child {
+  margin-top: 0;
+}
+
+.map-card dd {
+  display: inline;
+  margin: 0 0 0 0.3rem;
 }
 
 .app-content {
