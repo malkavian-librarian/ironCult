@@ -6,12 +6,19 @@ import { db } from '@/lib/db';
 import { crews, riders, presence, events } from '@/lib/db/schema';
 import { hashPassword } from '@/lib/auth/password';
 
+const MIN_RIDERS_PER_EVENT = 5;
+const MAX_RIDERS_PER_EVENT = 15;
+
+function randomRiderCount(): number {
+  return MIN_RIDERS_PER_EVENT + Math.floor(Math.random() * (MAX_RIDERS_PER_EVENT - MIN_RIDERS_PER_EVENT + 1));
+}
+
 const DEMO_EVENTS = [
-  { title: 'IronCult Hackathon Checkpoint', type: 'hackathon', lat: 52.22769, lon: 21.00481, district: 'srodmiescie', riderCount: 9 },
-  { title: 'Koneser Bike Night', type: 'bikenight', lat: 52.254444, lon: 21.043889, district: 'praga-polnoc', riderCount: 7 },
-  { title: 'Oczki After Ride', type: 'bikenight', lat: 52.2243525, lon: 21.0019246, district: 'ochota', riderCount: 5 },
-  { title: 'National Stadium Throttle Meet', type: 'meetup', lat: 52.2394, lon: 21.0456, district: 'praga-poludnie', riderCount: 6 },
-  { title: 'Pole Mokotowskie Night Loop', type: 'meetup', lat: 52.2109, lon: 21.0053, district: 'mokotow', riderCount: 4 },
+  { title: 'IronCult Hackathon Checkpoint', type: 'hackathon', lat: 52.22769, lon: 21.00481, district: 'srodmiescie', riderCount: randomRiderCount() },
+  { title: 'Koneser Bike Night', type: 'bikenight', lat: 52.254444, lon: 21.043889, district: 'praga-polnoc', riderCount: randomRiderCount() },
+  { title: 'Oczki After Ride', type: 'bikenight', lat: 52.2243525, lon: 21.0019246, district: 'ochota', riderCount: randomRiderCount() },
+  { title: 'National Stadium Throttle Meet', type: 'meetup', lat: 52.2394, lon: 21.0456, district: 'praga-poludnie', riderCount: randomRiderCount() },
+  { title: 'Pole Mokotowskie Night Loop', type: 'meetup', lat: 52.2109, lon: 21.0053, district: 'mokotow', riderCount: randomRiderCount() },
 ] as const;
 
 const DEMO_CREWS = [
