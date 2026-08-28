@@ -3,6 +3,12 @@ import { db } from '@/lib/db';
 import { routes, ratings } from '@/lib/db/schema';
 import { RatingControl } from './rating-control';
 
+function starReadout(average: number | null): string {
+  if (average === null) return 'No ratings yet';
+  const filled = Math.round(average);
+  return `${'★'.repeat(filled)}${'☆'.repeat(5 - filled)} ${average.toFixed(1)}`;
+}
+
 async function getRoutesWithRatings() {
   const all = await db.query.routes.findMany({ orderBy: desc(routes.createdAt) });
   return Promise.all(
@@ -23,7 +29,7 @@ export default async function RoutesPage() {
         <div key={route.id} className="panel" style={{ marginBottom: '1rem' }}>
           <h2>{route.title}</h2>
           <p>{route.voivodeship} · {route.difficulty} · {route.bikeType}</p>
-          <p>Average rating: {route.averageRating ?? 'No ratings yet'}</p>
+          <p style={{ color: 'var(--visor)', fontFamily: 'var(--font-data)' }}>{starReadout(route.averageRating)}</p>
           <RatingControl routeId={route.id} />
         </div>
       ))}
