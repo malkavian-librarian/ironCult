@@ -47,3 +47,14 @@ test('map event and biker markers open detail cards', async ({ page }) => {
   await expect(page.locator('[data-testid="rider-card"]')).toContainText('Iron Cult');
   await expect(page.locator('[data-testid="rider-card"]')).toContainText('Triumph Bonneville T120');
 });
+
+test('production seeded map shows demo density', async ({ page }) => {
+  test.skip(!process.env.DEMO_SEEDED, 'Set DEMO_SEEDED=true after running seed:map-demo');
+  await page.goto('/');
+  await expect(page.locator('[data-testid="live-map"]')).toHaveAttribute('data-basemap-loaded', 'true', { timeout: 20000 });
+  await expect(page.locator('[data-testid="live-map"]')).toHaveAttribute('data-turf-loaded', 'true', { timeout: 20000 });
+  const eventCount = await page.locator('[data-event-id]').count();
+  expect(eventCount).toBeGreaterThanOrEqual(5);
+  const riderCount = await page.locator('[data-rider-id]').count();
+  expect(riderCount).toBeGreaterThanOrEqual(31);
+});
