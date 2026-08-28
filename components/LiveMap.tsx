@@ -1,9 +1,11 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { crewColor } from '@/lib/crew-color';
 import { DISTRICT_FILL_OPACITY, districtColor } from '@/lib/map/district-colors';
 import { createWarsawStyle, WARSAW_BASEMAP_SOURCE_ID, WARSAW_CENTER, WARSAW_ZOOM } from '@/lib/map/warsaw-style';
+import { DemoSimulationLayer } from './DemoSimulationLayer';
+import type { DistrictFeature } from '@/lib/demo-sim/waypoints';
 
 type PresenceRow = {
   riderId: string;
@@ -85,6 +87,9 @@ function createEventMarkerElement(event: EventRow): HTMLButtonElement {
   el.dataset.eventId = event.id;
   el.style.setProperty('--event-color', event.districtColor || 'var(--visor)');
   el.setAttribute('aria-label', `Open event details for ${event.title}`);
+  const shape = document.createElement('span');
+  shape.className = 'event-marker-shape';
+  el.appendChild(shape);
   return el;
 }
 
@@ -131,6 +136,38 @@ export function LiveMap() {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [basemapLoaded, setBasemapLoaded] = useState(false);
   const [turfLoaded, setTurfLoaded] = useState(false);
+  const [simEnabled, setSimEnabled] = useState(false);
+  const [simCycleMs, setSimCycleMs] = useState<number | undefined>(undefined);
+  const [districts, setDistricts] = useState<DistrictFeature[]>([]);
+  const lastGeoRef = useRef<GeoCollection | null>(null);
+  const lastOwnersRef = useRef<Record<string, Owner>>({});
+  const districtOverridesRef = useRef<Record<string, string>>({});
+  const applyTurfColoringRef = useRef<() => void>(() => {});
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setSimEnabled(params.get('sim') === '1');
+    const cycleMsParam = params.get('cycleMs');
+    if (cycleMsParam && !Number.isNaN(Number(cycleMsParam))) setSimCycleMs(Number(cycleMsParam));
+  }, []);
+
+  useEffect(() => {
+    if (!simEnabled) return;
+    let cancelled = false;
+    fetch('/map/warsaw-districts.json')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: GeoCollection | null) => {
+        if (!cancelled && data) setDistricts(data.features as unknown as DistrictFeature[]);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [simEnabled]);
+
+  const handleDistrictFlip = useCallback((name: string, color: string) => {
+    if (districtOverridesRef.current[name] === color) return;
+    districtOverridesRef.current = { ...districtOverridesRef.current, [name]: color };
+    applyTurfColoringRef.current();
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -154,6 +191,7 @@ export function LiveMap() {
       });
       maplibreRef.current = maplibregl;
       mapRef.current = map;
+      if (process.env.NODE_ENV !== 'production') (window as unknown as { __liveMap?: MapLibreMap }).__liveMap = map;
       setMapReady(true);
       map.once('load', () => {
         setMapLoaded(true);
@@ -236,10 +274,45 @@ export function LiveMap() {
     if (!map) return;
     let cancelled = false;
 
+    function applyTurfColoring() {
+      const m = mapRef.current;
+      const geo = lastGeoRef.current;
+      if (!m || !geo) return;
+      const owners = lastOwnersRef.current;
+      const overrides = districtOverridesRef.current;
+
+      const colored = {
+        ...geo,
+        features: geo.features.map((f) => {
+          const name = f.properties.name as string;
+          const owner = owners[name];
+          return {
+            ...f,
+            properties: {
+              ...f.properties,
+              fillColor: overrides[name] ?? districtColor(name),
+              ownerName: owner?.crewName ?? '',
+            },
+          };
+        }),
+      } as unknown as TurfWarData;
+
+      const source = m.getSource('turf-war') as MapLibreGeoJSONSource | undefined;
+      if (source) {
+        source.setData(colored);
+      } else {
+        m.addSource('turf-war', { type: 'geojson', data: colored });
+        m.addLayer({ id: 'turf-war-fill', type: 'fill', source: 'turf-war', paint: { 'fill-color': ['get', 'fillColor'], 'fill-opacity': DISTRICT_FILL_OPACITY } });
+        m.addLayer({ id: 'turf-war-outline', type: 'line', source: 'turf-war', paint: { 'line-color': 'rgba(243,239,230,0.4)', 'line-width': 1 } });
+      }
+      setTurfLoaded(true);
+    }
+
+    applyTurfColoringRef.current = applyTurfColoring;
+
     async function refreshTurfWar() {
       try {
-        const m = mapRef.current;
-        if (!m || cancelled) return;
+        if (cancelled || !mapRef.current) return;
         const [geoRes, ownersRes] = await Promise.all([
           fetch('/map/warsaw-districts.json'),
           fetch('/api/turf-war'),
@@ -248,31 +321,9 @@ export function LiveMap() {
         const geo = (await geoRes.json()) as GeoCollection;
         const owners = (await ownersRes.json()) as Record<string, Owner>;
         if (cancelled || !mapRef.current) return;
-
-        const colored = {
-          ...geo,
-          features: geo.features.map((f) => {
-            const owner = owners[f.properties.name as string];
-            return {
-              ...f,
-              properties: {
-                ...f.properties,
-                fillColor: districtColor(f.properties.name as string),
-                ownerName: owner?.crewName ?? '',
-              },
-            };
-          }),
-        } as unknown as TurfWarData;
-
-        const source = mapRef.current.getSource('turf-war') as MapLibreGeoJSONSource | undefined;
-        if (source) {
-          source.setData(colored);
-        } else {
-          mapRef.current.addSource('turf-war', { type: 'geojson', data: colored });
-          mapRef.current.addLayer({ id: 'turf-war-fill', type: 'fill', source: 'turf-war', paint: { 'fill-color': ['get', 'fillColor'], 'fill-opacity': DISTRICT_FILL_OPACITY } });
-          mapRef.current.addLayer({ id: 'turf-war-outline', type: 'line', source: 'turf-war', paint: { 'line-color': 'rgba(243,239,230,0.4)', 'line-width': 1 } });
-        }
-        setTurfLoaded(true);
+        lastGeoRef.current = geo;
+        lastOwnersRef.current = owners;
+        applyTurfColoring();
       } catch {
         // transient fetch error or map disposed — next interval tick retries
       }
@@ -284,13 +335,25 @@ export function LiveMap() {
   }, [mapLoaded]);
 
   return (
-    <div
-      ref={containerRef}
-      className="live-map-shell"
-      data-testid="live-map"
-      data-map-loaded={mapLoaded ? 'true' : 'false'}
-      data-basemap-loaded={basemapLoaded ? 'true' : 'false'}
-      data-turf-loaded={turfLoaded ? 'true' : 'false'}
-    />
+    <>
+      <div
+        ref={containerRef}
+        className="live-map-shell"
+        data-testid="live-map"
+        data-map-loaded={mapLoaded ? 'true' : 'false'}
+        data-basemap-loaded={basemapLoaded ? 'true' : 'false'}
+        data-turf-loaded={turfLoaded ? 'true' : 'false'}
+        data-sim-enabled={simEnabled ? 'true' : 'false'}
+      />
+      {simEnabled && mapLoaded && districts.length > 0 && mapRef.current && maplibreRef.current && (
+        <DemoSimulationLayer
+          map={mapRef.current}
+          maplibregl={maplibreRef.current}
+          districts={districts}
+          cycleMs={simCycleMs}
+          onDistrictFlip={handleDistrictFlip}
+        />
+      )}
+    </>
   );
 }
