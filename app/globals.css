@@ -23,9 +23,24 @@
 
 body {
   margin: 0;
-  background: var(--asphalt);
   color: var(--paper);
   font-family: var(--font-display);
+  background-color: var(--asphalt);
+  background-image:
+    linear-gradient(rgba(16, 16, 15, 0.94), rgba(16, 16, 15, 0.94)),
+    url('/backgrounds/bonneville-engine-bg-mobile.jpg');
+  background-size: cover;
+  background-position: top center;
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+}
+
+@media (min-width: 768px) {
+  body {
+    background-image:
+      linear-gradient(rgba(16, 16, 15, 0.94), rgba(16, 16, 15, 0.94)),
+      url('/backgrounds/bonneville-engine-bg.jpg');
+  }
 }
 
 a { color: inherit; }
