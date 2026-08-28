@@ -3,12 +3,15 @@ import { crewColor } from '@/lib/crew-color';
 type RiderCardInput = {
   riderId: string;
   displayName: string;
+  email: string;
   crewId: string | null;
   crewName: string | null;
   motorcycle: string | null;
   experience: string | null;
   style: string | null;
 };
+
+const CURRENT_DEMO_USER_EMAIL = 'flyerone@demo.ironcult.local';
 
 function escapeSvgText(value: string): string {
   return value
@@ -41,7 +44,7 @@ export function riderAvatarUrl(displayName: string, markerColor: string): string
 }
 
 export function riderCard(row: RiderCardInput) {
-  const isCurrentDemoUser = row.displayName.toLowerCase() === 'flyerone';
+  const isCurrentDemoUser = row.email === CURRENT_DEMO_USER_EMAIL;
   const markerColor = isCurrentDemoUser ? 'hsl(5, 92%, 54%)' : crewColor(row.crewId);
   return {
     rank: riderRank(row.experience),

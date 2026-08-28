@@ -67,9 +67,13 @@ describe('presence rider card contract', () => {
       motorcycle,
       rank: 'Founder',
       clubName: crewName,
-      markerColor: 'hsl(5, 92%, 54%)',
-      isCurrentDemoUser: true,
+      // isCurrentDemoUser is keyed off the reserved flyerone@demo.ironcult.local account's
+      // email, not its display name (a real rider can rename themselves to "FlyerOne" without
+      // becoming the demo account) - this test rider registers with a normal @example.com
+      // address, so it must NOT be flagged as the current demo user.
+      isCurrentDemoUser: false,
     });
+    expect(rider.markerColor).not.toBe('hsl(5, 92%, 54%)');
     expect(rider.avatarUrl).toMatch(/^data:image\/svg\+xml,/);
   });
 });

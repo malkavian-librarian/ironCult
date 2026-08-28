@@ -29,6 +29,7 @@ export async function GET() {
     .select({
       riderId: presence.riderId,
       displayName: riders.displayName,
+      email: riders.email,
       lat: presence.lat,
       lon: presence.lon,
       updatedAt: presence.updatedAt,
@@ -54,7 +55,7 @@ export async function GET() {
         lon: r.lon,
         crewId: r.crewId,
         crewName: r.crewName,
-        ...riderCard({ riderId: r.riderId, displayName: r.displayName, crewId: r.crewId, crewName: r.crewName, motorcycle: r.motorcycle, experience: r.experience, style: r.style }),
+        ...riderCard({ riderId: r.riderId, displayName: r.displayName, email: r.email, crewId: r.crewId, crewName: r.crewName, motorcycle: r.motorcycle, experience: r.experience, style: r.style }),
       }))
   );
 }
