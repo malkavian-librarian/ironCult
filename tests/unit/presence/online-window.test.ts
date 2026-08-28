@@ -12,13 +12,13 @@ describe('isOnline', () => {
     expect(isOnline(new Date('2026-09-15T11:59:30Z'), now)).toBe(true);
   });
 
-  it('is false when updated 90 seconds ago (just past the 60s window)', () => {
+  it('is true when updated 90 seconds ago (within the demo-length window)', () => {
     const now = new Date('2026-09-15T12:01:30Z');
-    expect(isOnline(new Date('2026-09-15T12:00:00Z'), now)).toBe(false);
+    expect(isOnline(new Date('2026-09-15T12:00:00Z'), now)).toBe(true);
   });
 
-  it('is false when updated 3 minutes ago', () => {
-    const now = new Date('2026-09-15T12:00:00Z');
-    expect(isOnline(new Date('2026-09-15T11:57:00Z'), now)).toBe(false);
+  it('is false when updated 5 hours ago (past the 4-hour window)', () => {
+    const now = new Date('2026-09-15T17:00:00Z');
+    expect(isOnline(new Date('2026-09-15T12:00:00Z'), now)).toBe(false);
   });
 });

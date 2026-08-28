@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "seed:demo-content": "tsx scripts/seed-demo-content.ts"
+    "seed:demo-content": "tsx scripts/seed-demo-content.ts",
+    "seed:map-demo": "tsx --env-file=.env.local scripts/seed-map-demo.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

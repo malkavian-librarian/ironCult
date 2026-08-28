@@ -54,7 +54,7 @@ export async function GET() {
         lon: r.lon,
         crewId: r.crewId,
         crewName: r.crewName,
-        ...riderCard(r),
+        ...riderCard({ riderId: r.riderId, displayName: r.displayName, crewId: r.crewId, crewName: r.crewName, motorcycle: r.motorcycle, experience: r.experience, style: r.style }),
       }))
   );
 }

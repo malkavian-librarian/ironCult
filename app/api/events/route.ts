@@ -4,12 +4,12 @@ import { db } from '@/lib/db';
 import { events, presence } from '@/lib/db/schema';
 import { requireAuth, AuthError } from '@/lib/auth/require-auth';
 import { isHappeningNow } from '@/lib/events/happening-now';
-import { riderAvatarUrl } from '@/lib/demo/rider-card';
-import { crewColor } from '@/lib/crew-color';
 import { findWarsawDistrict } from '@/lib/geo/voivodeship';
 import { countNearbyRiders } from '@/lib/map/checkins';
 import { districtColor } from '@/lib/map/district-colors';
 import { isOnline } from '@/lib/presence/online-window';
+import { riderAvatarUrl } from '@/lib/demo/rider-card';
+import { crewColor } from '@/lib/crew-color';
 
 export async function POST(req: Request) {
   try {
@@ -42,6 +42,17 @@ export async function GET(req: Request) {
     orderBy: (e, { asc }) => asc(e.startsAt),
   });
 
+  const presenceRows = await db
+    .select({
+      lat: presence.lat,
+      lon: presence.lon,
+      updatedAt: presence.updatedAt,
+    })
+    .from(presence);
+  const onlinePresenceRows = presenceRows
+    .filter((row) => isOnline(row.updatedAt))
+    .map(({ lat, lon }) => ({ lat, lon }));
+
   const attendeeRows = rows.length
     ? await db.execute(sql`
         SELECT ea.event_id as "eventId", r.id as "riderId", r.display_name as "displayName", r.crew_id as "crewId"
@@ -59,20 +70,9 @@ export async function GET(req: Request) {
     byEvent.set(row.eventId, list);
   }
 
-  const presenceRows = await db
-    .select({
-      lat: presence.lat,
-      lon: presence.lon,
-      updatedAt: presence.updatedAt,
-    })
-    .from(presence);
-  const onlinePresenceRows = presenceRows
-    .filter((row) => isOnline(row.updatedAt))
-    .map(({ lat, lon }) => ({ lat, lon }));
-
   return NextResponse.json(rows.map((e) => {
-    const attendees = byEvent.get(e.id) ?? [];
     const district = findWarsawDistrict(e.lat, e.lon);
+    const attendees = byEvent.get(e.id) ?? [];
     return {
       ...e,
       happeningNow: isHappeningNow(e.startsAt),

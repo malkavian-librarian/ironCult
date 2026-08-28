@@ -1,4 +1,4 @@
-CREATE TABLE "event_attendees" (
+﻿CREATE TABLE "event_attendees" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"event_id" uuid NOT NULL,
 	"rider_id" uuid NOT NULL,

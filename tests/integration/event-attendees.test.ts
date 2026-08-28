@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+﻿import { describe, it, expect, beforeAll } from 'vitest';
 import { POST as register } from '@/app/api/auth/register/route';
 import { POST as createEvent, GET as listEvents } from '@/app/api/events/route';
 import { POST as attend, DELETE as unattend } from '@/app/api/events/[id]/attend/route';
