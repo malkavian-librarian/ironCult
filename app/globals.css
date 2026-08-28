@@ -17,6 +17,7 @@
   --touch-min: 44px;
   --breakpoint-tablet: 768px;
   --nav-height: 64px;
+  --top-nav-height: 56px;
 }
 
 * { box-sizing: border-box; }
@@ -89,6 +90,49 @@ button:hover { background: var(--signal-strong); }
   padding: 1rem;
 }
 
+.live-map-shell {
+  width: 100%;
+  height: calc(100dvh - var(--safe-top) - var(--safe-bottom));
+  min-height: calc(100dvh - var(--safe-top) - var(--safe-bottom));
+  margin-top: var(--safe-top);
+  margin-bottom: var(--safe-bottom);
+  background: var(--asphalt);
+}
+
+.presence-dot {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--asphalt);
+  border-radius: 50%;
+  background: var(--presence-color, var(--signal));
+  box-shadow:
+    0 0 0 2px var(--paper),
+    0 0 0 0 color-mix(in srgb, var(--presence-color, var(--signal)) 58%, transparent);
+  animation: presence-pulse 1.45s ease-out infinite;
+}
+
+@keyframes presence-pulse {
+  0% {
+    box-shadow:
+      0 0 0 2px var(--paper),
+      0 0 0 0 color-mix(in srgb, var(--presence-color, var(--signal)) 62%, transparent);
+  }
+  64% {
+    box-shadow:
+      0 0 0 2px var(--paper),
+      0 0 0 13px color-mix(in srgb, var(--presence-color, var(--signal)) 0%, transparent);
+  }
+  100% {
+    box-shadow:
+      0 0 0 2px var(--paper),
+      0 0 0 0 color-mix(in srgb, var(--presence-color, var(--signal)) 0%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .presence-dot { animation: none; }
+}
+
 .app-content {
   padding-bottom: calc(var(--nav-height) + var(--safe-bottom));
 }
@@ -136,10 +180,18 @@ button:hover { background: var(--signal-strong); }
 }
 
 @media (min-width: 768px) {
+  .live-map-shell {
+    height: calc(100dvh - var(--top-nav-height));
+    min-height: calc(100dvh - var(--top-nav-height));
+    margin-top: 0;
+    margin-bottom: 0;
+  }
   .top-nav {
     display: flex;
+    align-items: center;
     gap: 1rem;
-    padding: 1rem;
+    height: var(--top-nav-height);
+    padding: 0 1rem;
     border-bottom: 1px solid var(--line);
   }
   .bottom-nav, .profile-link { display: none; }
