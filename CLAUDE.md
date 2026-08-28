@@ -259,3 +259,15 @@ write to it.
   `track:B` because it touches both tracks' pages after both were otherwise complete, the same way
   `phase:4` already covers cross-track integration. Reuse `phase:5` for any future work in this same
   "touches everything, both tracks are done" shape rather than inventing another label.
+- **Two agent sessions in the same working directory (`C:\Users\FlyerOne\Desktop\ironCult`) share
+  one git checkout** — there is no per-session isolation. Concretely hit during Phase 4 (2026-08-28):
+  a GLM session doing the mobile-first redesign had `mobile-redesign` checked out, and a Claude
+  Code commit meant for `main` landed on `mobile-redesign` instead, silently, because `git commit`
+  just commits to whatever branch is currently checked out in the shared tree. Recovered via `git
+  worktree add <tmp> main` + `git cherry-pick` + push, then `git reset --hard origin/<branch>` to
+  strip the stray commit back off the other session's branch (safe only because it hadn't been
+  pushed yet — check `git log <branch> vs origin/<branch>` before resetting). **Before committing,
+  run `git status`/`git rev-parse --abbrev-ref HEAD` and confirm you're actually on the branch you
+  think you're on** — don't assume the shared directory is still on the branch you last left it on.
+  For any work not meant for the currently-checked-out branch, use a `git worktree` instead of
+  switching branches in the shared tree.
