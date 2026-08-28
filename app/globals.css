@@ -178,8 +178,8 @@ button:hover { background: var(--signal-strong); }
 }
 
 .presence-dot {
-  width: 20px;
-  height: 20px;
+  width: 14px;
+  height: 14px;
   border: 2px solid var(--asphalt);
   border-radius: 50%;
   background: var(--presence-color, var(--signal));
@@ -194,9 +194,9 @@ button:hover { background: var(--signal-strong); }
    quantity still reads clearly as "many riders" without the frame-rate cost. Not clickable,
    so they never intercept taps meant for real markers. */
 .presence-dot-sim {
-  width: 9px;
-  height: 9px;
-  border-width: 1px;
+  width: 14px;
+  height: 14px;
+  border-width: 2px;
   box-shadow: 0 0 0 1px var(--paper);
   animation: none;
   pointer-events: none;
@@ -234,8 +234,8 @@ button:hover { background: var(--signal-strong); }
 }
 
 .presence-dot-self {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-width: 3px;
   z-index: 2;
 }
@@ -245,8 +245,8 @@ button:hover { background: var(--signal-strong); }
    fought over. The visible pin shape lives on the nested .event-marker-shape child instead,
    which is free to rotate in place (around its own center, so the anchor point never shifts). */
 .event-marker {
-  width: 22px;
-  height: 22px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -254,10 +254,10 @@ button:hover { background: var(--signal-strong); }
 }
 
 .event-marker-shape {
-  width: 13px;
-  height: 13px;
-  border-radius: 3px;
-  background: var(--event-color, var(--visor));
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  background: #000000;
   box-shadow: 0 0 0 2px var(--paper), 0 0 14px color-mix(in srgb, var(--event-color, var(--visor)) 72%, transparent);
   transform: rotate(45deg);
 }
