@@ -27,6 +27,18 @@ Built in 8 hours at **BRAVE UnAIted** (28.08.2026, Butelkownia, Warsaw) — see
   **turf-war** layer: Warsaw is split into its 18 districts, and each district is colored by
   whichever crew currently has the most logged routes there.
 
+## Mobile-first design
+
+The app is built mobile-first for a **Google Pixel 7** (412×915 CSS px, touch) — the live map is
+the home screen on launch, and navigation is a 5-tab bottom bar (Map, Routes, Ranks, Buddies,
+Events) with a persistent top-right profile/settings icon. At ≥768px (tablet/desktop), the bottom
+bar hides and a conventional top nav bar takes over — driven entirely by a CSS media query, not JS,
+to avoid a hydration flash. Every interactive element meets a 44px touch-target floor; safe-area
+insets (`env(safe-area-inset-*)`) pad for the iOS/Android gesture strips. A subtle Bonneville engine
+photo sits behind the panels with a high-opacity dark scrim (0.94 alpha) for texture without
+competing with text. All mobile layout assertions are verified via Playwright's
+`devices['Pixel 7']` project.
+
 ## Tech stack
 
 - **Framework:** Next.js (App Router) + TypeScript, deployed on Vercel
@@ -81,7 +93,7 @@ npx playwright test     # Playwright — local UI smoke checks (needs `npm run d
 ```
 app/            Next.js App Router pages + API route handlers
 lib/            Shared server logic: db, auth, geo helpers, domain queries
-components/     Shared React components (nav, map, presence toggle, ...)
+components/     Shared React components (nav, bottom nav, map, presence toggle, ...)
 public/map/     Bundled GeoJSON boundaries (Poland voivodeships, Warsaw districts)
 tests/          Vitest (unit/, integration/) and Playwright (e2e/) tests
 docs/           Design spec, implementation plans, market research

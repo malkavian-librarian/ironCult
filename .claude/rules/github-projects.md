@@ -25,8 +25,9 @@ browser.
 ## Issues
 
 - One issue per plan task, filed with the task's title from the plan doc. Labels: `phase:0`,
-  `track:A`, `track:B`, `phase:4` (per the design spec's tagging scheme) — this is what lets the
-  board reflect plan progress without extra bookkeeping.
+  `track:A`, `track:B`, `phase:4`, `phase:5` (per the design spec's tagging scheme, extended for
+  the mobile-redesign pass — see CLAUDE.md Gotchas) — this is what lets the board reflect plan
+  progress without extra bookkeeping.
 - Reference the issue number in the commit message (`#12`) and, for Track A/B/Phase 4 work that
   goes through a PR, use a closing keyword (`Closes #12`, `Fixes #12`) in the PR description so
   merging auto-closes it.

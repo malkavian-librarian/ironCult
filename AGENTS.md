@@ -37,3 +37,9 @@ before considering that task done.
   See `.claude/rules/github-projects.md`.
 - No Tailwind, no Google Fonts — use the CSS custom properties in `app/globals.css` and the
   `.panel` class.
+- Nav visibility is CSS-only (`@media (min-width: 768px)` in `app/globals.css`), not
+  `useMediaQuery` — `AppNav` renders both `NavBar` and `BottomNav` unconditionally; don't
+  reintroduce a JS toggle (causes hydration flash).
+- Use `100dvh` (not bare `100vh`) for anything meant to fill the mobile screen — bare `vh`
+  overshoots on Android Chrome. Safe-area tokens (`--safe-top`, `--safe-bottom`), `--touch-min`
+  (44px), and `--nav-height` are the CSS custom properties the mobile layout depends on.
