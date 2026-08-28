@@ -12,6 +12,8 @@ export function PresenceToggle() {
         method: 'POST',
         headers: { 'content-type': 'application/json', authorization: `Bearer ${localStorage.getItem('ironcult_token')}` },
         body: JSON.stringify({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+      }).catch(() => {
+        // transient network error — next interval tick retries
       });
     });
   }
