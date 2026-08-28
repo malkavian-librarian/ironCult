@@ -69,7 +69,7 @@ export default function BuddyFinderPage() {
       <h1 style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.06em' }}>BUDDY FINDER</h1>
 
       <section className="panel" aria-label="Filters">
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+        <div className="filter-row" style={{ alignItems: 'flex-end' }}>
           <label style={{ display: 'grid', gap: '0.25rem' }}>
             <span>Voivodeship</span>
             <select value={filterVoivodeship} onChange={(e) => setFilterVoivodeship(e.target.value)} style={{ minHeight: '42px' }}>
@@ -87,15 +87,15 @@ export default function BuddyFinderPage() {
       <section className="panel" aria-label="Create post">
         <h2 style={{ marginTop: 0 }}>POST A REQUEST</h2>
         <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '0.75rem' }}>
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <label style={{ display: 'grid', gap: '0.25rem', flex: '1', minWidth: '160px' }}>
+          <div className="filter-row">
+            <label style={{ display: 'grid', gap: '0.25rem', flex: '1' }}>
               <span>Voivodeship</span>
               <select required value={postVoivodeship} onChange={(e) => setPostVoivodeship(e.target.value)} style={{ minHeight: '42px' }}>
                 <option value="">Select…</option>
                 {VOIVODESHIPS.map((v) => <option key={v} value={v}>{v}</option>)}
               </select>
             </label>
-            <label style={{ display: 'grid', gap: '0.25rem', flex: '1', minWidth: '160px' }}>
+            <label style={{ display: 'grid', gap: '0.25rem', flex: '1' }}>
               <span>Planned date</span>
               <input required type="date" value={plannedDate} onChange={(e) => setPlannedDate(e.target.value)} style={{ minHeight: '42px' }} />
             </label>

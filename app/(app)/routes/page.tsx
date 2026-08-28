@@ -17,7 +17,7 @@ export default async function RoutesPage() {
   const routesWithRatings = await getRoutesWithRatings();
 
   return (
-    <div style={{ padding: '1rem' }}>
+    <div style={{ padding: '1rem', maxWidth: 640, margin: '0 auto', width: '100%' }}>
       <h1>Routes</h1>
       {routesWithRatings.map((route) => (
         <div key={route.id} className="panel" style={{ marginBottom: '1rem' }}>
