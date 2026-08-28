@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { NavBar } from "@/components/NavBar";
+import { AppNav } from "@/components/AppNav";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,7 +17,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en">
       <body>
-        <NavBar />
+        <AppNav />
         {children}
       </body>
     </html>
