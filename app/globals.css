@@ -164,6 +164,19 @@ button:hover { background: var(--signal-strong); }
   animation: presence-pulse 1.45s ease-out infinite;
 }
 
+/* Simulated demo dots skip the per-marker box-shadow pulse animation — animating box-shadow
+   on 500+ elements simultaneously is expensive and not GPU-accelerated; a flat dot at this
+   quantity still reads clearly as "many riders" without the frame-rate cost. Not clickable,
+   so they never intercept taps meant for real markers. */
+.presence-dot-sim {
+  width: 9px;
+  height: 9px;
+  border-width: 1px;
+  box-shadow: 0 0 0 1px var(--paper);
+  animation: none;
+  pointer-events: none;
+}
+
 @keyframes presence-pulse {
   0% {
     box-shadow:
@@ -183,7 +196,7 @@ button:hover { background: var(--signal-strong); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .presence-dot, .event-marker-live { animation: none; }
+  .presence-dot, .event-marker-live .event-marker-shape { animation: none; }
 }
 
 .presence-dot,
@@ -202,16 +215,48 @@ button:hover { background: var(--signal-strong); }
   z-index: 2;
 }
 
+/* .event-marker is the touch target MapLibre positions/translates directly — it must stay a
+   plain, un-rotated box so MapLibre's own inline transform (translate for lng/lat) isn't
+   fought over. The visible pin shape lives on the nested .event-marker-shape child instead,
+   which is free to rotate in place (around its own center, so the anchor point never shifts). */
 .event-marker {
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  background: var(--event-color, var(--visor));
-  box-shadow: 0 0 0 2px var(--paper), 0 0 22px color-mix(in srgb, var(--event-color, var(--visor)) 72%, transparent);
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
 }
 
-.event-marker-live {
-  animation: presence-pulse 1.2s ease-out infinite;
+.event-marker-shape {
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+  background: var(--event-color, var(--visor));
+  box-shadow: 0 0 0 2px var(--paper), 0 0 14px color-mix(in srgb, var(--event-color, var(--visor)) 72%, transparent);
+  transform: rotate(45deg);
+}
+
+.event-marker-live .event-marker-shape {
+  animation: event-marker-pulse 1.2s ease-out infinite;
+}
+
+@keyframes event-marker-pulse {
+  0% {
+    box-shadow:
+      0 0 0 2px var(--paper),
+      0 0 0 0 color-mix(in srgb, var(--event-color, var(--visor)) 62%, transparent);
+  }
+  64% {
+    box-shadow:
+      0 0 0 2px var(--paper),
+      0 0 0 10px color-mix(in srgb, var(--event-color, var(--visor)) 0%, transparent);
+  }
+  100% {
+    box-shadow:
+      0 0 0 2px var(--paper),
+      0 0 0 0 color-mix(in srgb, var(--event-color, var(--visor)) 0%, transparent);
+  }
 }
 
 .maplibregl-popup .maplibregl-popup-content {
