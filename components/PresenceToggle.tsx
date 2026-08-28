@@ -30,8 +30,23 @@ export function PresenceToggle() {
   }, [riding]);
 
   return (
-    <button onClick={() => setRiding((r) => !r)}>
-      {riding ? "I'm riding — stop" : "I'm riding"}
+    <button
+      onClick={() => setRiding((r) => !r)}
+      data-testid="presence-toggle"
+      style={{
+        position: 'fixed',
+        right: '1rem',
+        bottom: 'calc(var(--nav-height, 64px) + var(--safe-bottom) + 1rem)',
+        zIndex: 20,
+        minWidth: 'var(--touch-min)',
+        minHeight: 'var(--touch-min)',
+        borderRadius: '999px',
+        padding: '0 1.25rem',
+        background: riding ? 'var(--visor)' : 'var(--signal)',
+        color: riding ? 'var(--asphalt)' : 'var(--paper)',
+      }}
+    >
+      {riding ? "Riding \u2014 stop" : "I'm riding"}
     </button>
   );
 }
