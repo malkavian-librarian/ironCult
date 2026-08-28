@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { crewColor } from '@/lib/crew-color';
+import { DISTRICT_FILL_OPACITY, districtColor } from '@/lib/map/district-colors';
 import { createWarsawStyle, WARSAW_BASEMAP_SOURCE_ID, WARSAW_CENTER, WARSAW_ZOOM } from '@/lib/map/warsaw-style';
 
 type PresenceRow = { riderId: string; displayName: string; lat: number; lon: number; crewId: string | null; crewName: string | null };
@@ -169,7 +170,7 @@ export function LiveMap() {
               ...f,
               properties: {
                 ...f.properties,
-                fillColor: crewColor(owner?.crewId, 32),
+                fillColor: districtColor(f.properties.name as string),
                 ownerName: owner?.crewName ?? '',
               },
             };
@@ -181,7 +182,7 @@ export function LiveMap() {
           source.setData(colored);
         } else {
           mapRef.current.addSource('turf-war', { type: 'geojson', data: colored });
-          mapRef.current.addLayer({ id: 'turf-war-fill', type: 'fill', source: 'turf-war', paint: { 'fill-color': ['get', 'fillColor'], 'fill-opacity': 0.65 } });
+          mapRef.current.addLayer({ id: 'turf-war-fill', type: 'fill', source: 'turf-war', paint: { 'fill-color': ['get', 'fillColor'], 'fill-opacity': DISTRICT_FILL_OPACITY } });
           mapRef.current.addLayer({ id: 'turf-war-outline', type: 'line', source: 'turf-war', paint: { 'line-color': 'rgba(243,239,230,0.4)', 'line-width': 1 } });
         }
         setTurfLoaded(true);
