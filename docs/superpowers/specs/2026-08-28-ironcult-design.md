@@ -8,7 +8,9 @@
 
 ## 1. Product summary
 
-ironCult is a minimalistic, Poland-only motorcycle social network. Riders register, maintain a profile, log simplified routes, rate other riders' routes, join a crew, see crew and individual leaderboards, post/browse buddy-finder requests for planned rides, create/browse local events, and — the centerpiece feature — see a live map of Poland showing riders currently out riding, events happening now, and a "turf war" layer showing which crew currently dominates each of Poland's 16 voivodeships.
+ironCult is a minimalistic, Poland-only motorcycle social network. Riders register, maintain a profile, log simplified routes, rate other riders' routes, join a crew, see crew and individual leaderboards, post/browse buddy-finder requests for planned rides, create/browse local events, and — the centerpiece feature — see a live map of Poland showing riders currently out riding, events happening now, and a "turf war" layer.
+
+**2026-08-28 decision (mid-Phase-0):** For the demo, turf-war zooms into Warsaw specifically rather than staying at whole-Poland-voivodeship granularity — Warsaw is split into its own district polygons and turf ownership for the demo is computed per-district within Warsaw. This is additive, not a replacement: `routes.voivodeship` (all 16 voivodeships) is still derived and used everywhere else (buddy finder, events, leaderboards). A new nullable `routes.district` is derived via a second point-in-polygon check against Warsaw's district boundaries, populated only for routes that fall inside Warsaw. See §5 and §6 (Task 4) for the mechanics.
 
 Source material: two market-research docs seeded the two secondary feature sets —
 - Buddy Finder (Linear HER-14): match riders by planned route/dates/style/experience/pace/language.
@@ -29,7 +31,7 @@ Explicitly cut, and why:
 - **No swipe UI for Buddy Finder.** A filtered list of "riding in region X on date Y" posts serves the same purpose for a fraction of the UI work.
 - **No true real-time transport (no websockets/Pusher).** Presence is a polled table (~10s interval) — reads as "live" in a demo without the operational complexity of a pub-sub layer.
 - **No route-geometry similarity matching.** Buddy Finder matches on voivodeship + date overlap + profile fields, not on comparing two routes' paths.
-- **No scoring formula for turf wars.** Ownership is a straight count (routes per voivodeship per crew, highest wins), recomputed live via SQL query on read — not a maintained/cached score, not a time-decayed contest mechanic.
+- **No scoring formula for turf wars.** Ownership is a straight count (routes per district per crew within Warsaw, highest wins — see 2026-08-28 decision above), recomputed live via SQL query on read — not a maintained/cached score, not a time-decayed contest mechanic.
 - **No crew management beyond create/join.** No leave, no ownership transfer, no invites — a rider picks "create new" or "join existing by name" once in settings.
 
 Kept, deliberately, despite the time pressure (explicit user calls):
@@ -70,6 +72,9 @@ routes
   difficulty, bikeType, sceneryTags,    -- reuse Rid3rMap's enum literal sets
   voivodeship,                          -- derived server-side from startLat/startLon
                                          -- via point-in-polygon at create time; never client-supplied
+  district,                             -- nullable; derived server-side via a second point-in-polygon
+                                         -- check against Warsaw's district boundaries; set only when
+                                         -- the route falls inside Warsaw, null everywhere else in Poland
   createdAt
 
 ratings

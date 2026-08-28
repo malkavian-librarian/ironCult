@@ -33,6 +33,7 @@ export const routes = pgTable('routes', {
   bikeType: text('bike_type').notNull(),
   sceneryTags: text('scenery_tags').notNull(),
   voivodeship: text('voivodeship').notNull(),
+  district: text('district'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
