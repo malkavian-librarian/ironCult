@@ -40,8 +40,14 @@ npx playwright test         # local UI smoke checks (needs `npm run dev` running
 ```
 app/            Next.js App Router pages + API route handlers
 lib/            Shared server logic: db, auth, geo helpers (lib/geo/voivodeship.ts), domain queries
+lib/demo/       Deterministic demo-rider display helpers (rank/avatar/marker color) shared by
+                the presence API and the leaderboard crew-roster panel
+lib/demo-sim/   Client-only live-map simulation (500 moving riders + 15-min territory-invasion
+                cycle) — opt-in via `?sim=1` on the homepage, see docs/demo-map-sim-runbook.md
 components/     Shared React components (NavBar, BottomNav, AppNav, LiveMap, PresenceToggle, ...)
 public/map/     Bundled GeoJSON boundaries (poland-voivodeships.json, warsaw-districts.json)
+scripts/        Demo seed scripts (seed-map-demo.ts, seed-demo-content.ts) — see the seed-order
+                gotcha below before running either
 tests/          Vitest (unit/, integration/) and Playwright (e2e/) tests
 docs/           Design spec, implementation plans, demo-prep checklist, market research
 .claude/rules/  Auto-loaded workflow rules (GitHub issues/acceptance-criteria/board)
@@ -277,3 +283,28 @@ write to it.
   think you're on** — don't assume the shared directory is still on the branch you last left it on.
   For any work not meant for the currently-checked-out branch, use a `git worktree` instead of
   switching branches in the shared tree.
+- **Never reuse a Drizzle `sql\`...\`` tagged-template fragment across multiple `db.execute()`
+  calls.** Building one fragment (e.g. `const testRiderIds = sql\`(SELECT id FROM riders WHERE
+  email LIKE '%@example.com')\`;`) and interpolating it into several separate DELETE statements
+  silently wiped the entire `presence` table twice during Phase 5 (2026-08-28), not just the
+  matching rows — no error, no warning, just gone. Root cause in the neon-http driver was never
+  fully isolated; the fix is procedural: build a fresh `sql\`...\`` literal inline for every
+  `db.execute()` call instead of reusing a shared fragment object.
+- **The reserved demo account is `flyerone@demo.ironcult.local`**, identified by email
+  (`lib/demo/rider-card.ts`'s `CURRENT_DEMO_USER_EMAIL`), not display name — fixed in #64 after
+  renaming the profile broke the special red/2x "you are here" map marker. `npm run
+  seed:map-demo` unconditionally deletes and recreates this rider with hardcoded profile
+  defaults (motorcycle, bio, etc.) — **never re-run it once the presenter has customized their
+  demo profile** without immediately re-patching `/api/profile` afterward (see git history
+  around 2026-08-28 for the exact PATCH payload used).
+- **`seed:map-demo` and `seed:demo-content` conflict if run out of order.** Both use the
+  `@demo.ironcult.local` email convention and both unconditionally `DELETE FROM events`, but
+  `seed:map-demo`'s cleanup also deletes *every* rider matching `%@demo.ironcult.local` — including
+  `seed:demo-content`'s named crew rosters. Safe order: run `seed:map-demo` first (500-rider
+  map presence + base events), then `seed:demo-content` (rich crew rosters + event
+  descriptions/RSVPs) second, since only the latter leaves the former's riders untouched.
+- **Shared-checkout collisions (see the two-agent-sessions gotcha above) recur — worktree
+  recovery pattern that works:** `git worktree add -b <new-branch> ../ironCult-<name> <base>`
+  to get an isolated copy without disturbing the shared tree, and `git stash push -m "..." --
+  <files>` before switching branches + `git stash pop` after, to carry uncommitted edits across
+  cleanly when you need to rebase onto a newer base first.

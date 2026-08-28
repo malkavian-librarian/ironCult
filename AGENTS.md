@@ -27,7 +27,11 @@ before considering that task done.
 
 **Non-negotiable, repo-wide:**
 - Never push directly to `main` from Track A/B — work on `track-a`/`track-b`, PR into `main`,
-  `Closes #<issue>` in the PR body.
+  `Closes #<issue>` in the PR body. **Exception**: on pitch/demo day, if the user explicitly
+  asks for an urgent fix to go live ("hurry", "push to prod now") and the change is small,
+  already type-checked, and already verified locally, a direct push straight to `main` is an
+  acceptable judgment call — happened repeatedly on 2026-08-28 for CSS-only hotfixes minutes
+  before the pitch. Still run `npx tsc --noEmit` first; still don't skip verification.
 - Every route handler touching rider-owned data calls `requireAuth(req)` — never trust a
   client-supplied rider/owner/crew id in a request body.
 - `routes.voivodeship` and `routes.district` are always server-derived (`findVoivodeship` /
