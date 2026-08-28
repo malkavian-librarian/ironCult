@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { crews, presence, riders } from '@/lib/db/schema';
 import { requireAuth, AuthError } from '@/lib/auth/require-auth';
+import { riderCard } from '@/lib/demo/rider-card';
 import { isOnline } from '@/lib/presence/online-window';
 
 export async function POST(req: Request) {
@@ -33,6 +34,12 @@ export async function GET() {
       updatedAt: presence.updatedAt,
       crewId: riders.crewId,
       crewName: crews.name,
+      motorcycle: riders.motorcycle,
+      experience: riders.experience,
+      style: riders.style,
+      bio: riders.bio,
+      pace: riders.pace,
+      language: riders.language,
     })
     .from(presence)
     .innerJoin(riders, eq(presence.riderId, riders.id))
@@ -47,6 +54,7 @@ export async function GET() {
         lon: r.lon,
         crewId: r.crewId,
         crewName: r.crewName,
+        ...riderCard(r),
       }))
   );
 }
