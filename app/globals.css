@@ -53,6 +53,38 @@ input, select, textarea {
   min-width: 0;
 }
 
+.attendee-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.attendee-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  object-fit: cover;
+}
+
+.crew-roster {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.crew-roster-member {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.crew-roster-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 .leaderboard-columns {
   display: flex;
   flex-direction: column;

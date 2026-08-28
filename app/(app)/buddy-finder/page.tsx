@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { EventsList } from '@/components/EventsList';
 
 const VOIVODESHIPS = [
   'slaskie', 'opolskie', 'wielkopolskie', 'zachodniopomorskie', 'swietokrzyskie',
@@ -126,6 +127,9 @@ export default function BuddyFinderPage() {
         ))}
         {posts.length === 0 && <p style={{ color: 'var(--mist)' }}>No buddy requests yet.</p>}
       </section>
+
+      <h2 style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.06em', marginBottom: 0 }}>EVENTS NEARBY</h2>
+      <EventsList filterVoivodeship={filterVoivodeship} filterDate={filterDate} />
     </main>
   );
 }

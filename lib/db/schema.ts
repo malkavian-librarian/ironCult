@@ -65,8 +65,18 @@ export const events = pgTable('events', {
   lat: doublePrecision('lat').notNull(),
   lon: doublePrecision('lon').notNull(),
   startsAt: timestamp('starts_at').notNull(),
+  description: text('description'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+export const eventAttendees = pgTable('event_attendees', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  eventId: uuid('event_id').notNull().references(() => events.id, { onDelete: 'cascade' }),
+  riderId: uuid('rider_id').notNull().references(() => riders.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (t) => ({
+  uniqueAttendance: unique().on(t.eventId, t.riderId),
+}));
 
 export const presence = pgTable('presence', {
   riderId: uuid('rider_id').primaryKey().references(() => riders.id),
