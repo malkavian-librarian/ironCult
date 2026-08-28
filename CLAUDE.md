@@ -201,3 +201,13 @@ write to it.
   turf-war + `findWarsawDistrict`) — both produced by `lib/geo/voivodeship.ts`. Don't conflate
   them; the turf-war fill layer renders the Warsaw file, the base map/voivodeship derivation uses
   the Poland file.
+- **`npx vitest run` does NOT typecheck — `next build` does, and a type error in a test file
+  fails the Vercel deploy, not `npm run test`.** Symptom: `vitest run` is green locally, but the
+  Vercel build log shows `Running TypeScript ... error TS2554: Expected 0 arguments, but got 1`
+  (or similar) and `Error: Command "npm run build" exited with 1` — this happened for real:
+  `tests/integration/leaderboard.test.ts` called `crewLeaderboard(new Request(...))` against a
+  `GET()` handler that takes zero params; vitest ignored the extra arg (JS is lenient at
+  runtime), but `next build`'s `tsc` pass caught the type mismatch and blocked every deploy from
+  that branch. **Before pushing, run `npx tsc --noEmit` (or `npm run build` for the full check)
+  in addition to `npx vitest run`** — vitest passing is not sufficient evidence the build will
+  succeed.
