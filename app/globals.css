@@ -151,7 +151,73 @@ button:hover { background: var(--signal-strong); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .presence-dot { animation: none; }
+  .presence-dot, .event-marker-live { animation: none; }
+}
+
+.presence-dot,
+.event-marker {
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+}
+
+.presence-dot-self {
+  width: 30px;
+  height: 30px;
+  border-width: 3px;
+  z-index: 2;
+}
+
+.event-marker {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: var(--event-color, var(--visor));
+  box-shadow: 0 0 0 2px var(--paper), 0 0 22px color-mix(in srgb, var(--event-color, var(--visor)) 72%, transparent);
+}
+
+.event-marker-live {
+  animation: presence-pulse 1.2s ease-out infinite;
+}
+
+.map-card {
+  width: min(260px, 78vw);
+  color: var(--paper);
+  background: #080807;
+}
+
+.map-card img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.map-card h3 {
+  margin: 0.2rem 0 0.5rem;
+}
+
+.map-card-kicker {
+  margin: 0;
+  color: var(--mist);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.map-card dl {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  font-family: var(--font-data);
+}
+
+.map-card dt {
+  color: var(--mist);
+  display: inline;
+}
+
+.map-card dd {
+  display: inline;
+  margin: 0 0 0 0.3rem;
 }
 
 .app-content {
