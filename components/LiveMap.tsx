@@ -47,6 +47,8 @@ export function LiveMap() {
         },
         center: [19.1, 52.0],
         zoom: 6,
+        touchPitch: false,
+        dragRotate: false,
       });
       maplibreRef.current = maplibregl;
       mapRef.current = map;
@@ -104,14 +106,14 @@ export function LiveMap() {
 
     for (const rider of presenceRows) {
       const el = document.createElement('div');
-      el.style.cssText = 'width:12px;height:12px;border-radius:50%;background:var(--signal);border:2px solid var(--paper);';
+      el.style.cssText = 'width:16px;height:16px;border-radius:50%;background:var(--signal);border:2px solid var(--paper);';
       el.title = rider.displayName;
       markersRef.current.push(new maplibregl.Marker({ element: el }).setLngLat([rider.lon, rider.lat]).addTo(map));
     }
 
     for (const event of eventRows) {
       const el = document.createElement('div');
-      el.style.cssText = `width:14px;height:14px;border-radius:2px;background:${event.happeningNow ? 'var(--visor)' : 'var(--concrete)'};border:2px solid var(--paper);`;
+      el.style.cssText = `width:18px;height:18px;border-radius:2px;background:${event.happeningNow ? 'var(--visor)' : 'var(--concrete)'};border:2px solid var(--paper);`;
       el.title = `${event.title}${event.happeningNow ? ' (happening now)' : ''}`;
       markersRef.current.push(new maplibregl.Marker({ element: el }).setLngLat([event.lon, event.lat]).addTo(map));
     }
@@ -155,7 +157,7 @@ export function LiveMap() {
           source.setData(colored);
         } else {
           mapRef.current.addSource('turf-war', { type: 'geojson', data: colored });
-          mapRef.current.addLayer({ id: 'turf-war-fill', type: 'fill', source: 'turf-war', paint: { 'fill-color': ['get', 'fillColor'], 'fill-opacity': 0.55 } });
+          mapRef.current.addLayer({ id: 'turf-war-fill', type: 'fill', source: 'turf-war', paint: { 'fill-color': ['get', 'fillColor'], 'fill-opacity': 0.65 } });
           mapRef.current.addLayer({ id: 'turf-war-outline', type: 'line', source: 'turf-war', paint: { 'line-color': 'rgba(243,239,230,0.4)', 'line-width': 1 } });
         }
         setTurfLoaded(true);
@@ -169,5 +171,5 @@ export function LiveMap() {
     return () => { cancelled = true; clearInterval(interval); };
   }, [mapLoaded]);
 
-  return <div ref={containerRef} style={{ width: '100%', height: '70vh' }} data-testid="live-map" data-map-loaded={mapLoaded ? 'true' : 'false'} data-turf-loaded={turfLoaded ? 'true' : 'false'} />;
+  return <div ref={containerRef} style={{ width: '100%', height: '100dvh' }} data-testid="live-map" data-map-loaded={mapLoaded ? 'true' : 'false'} data-turf-loaded={turfLoaded ? 'true' : 'false'} />;
 }

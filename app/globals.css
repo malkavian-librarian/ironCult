@@ -12,21 +12,60 @@
   --shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
   --font-display: Arial, Helvetica, sans-serif;
   --font-data: "Cascadia Mono", "Consolas", monospace;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --touch-min: 44px;
+  --breakpoint-tablet: 768px;
+  --nav-height: 64px;
 }
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  background: var(--asphalt);
   color: var(--paper);
   font-family: var(--font-display);
+  background-color: var(--asphalt);
+  background-image:
+    linear-gradient(rgba(16, 16, 15, 0.94), rgba(16, 16, 15, 0.94)),
+    url('/backgrounds/bonneville-engine-bg-mobile.jpg');
+  background-size: cover;
+  background-position: top center;
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+}
+
+@media (min-width: 768px) {
+  body {
+    background-image:
+      linear-gradient(rgba(16, 16, 15, 0.94), rgba(16, 16, 15, 0.94)),
+      url('/backgrounds/bonneville-engine-bg.jpg');
+  }
 }
 
 a { color: inherit; }
 
+input, select, textarea {
+  min-height: var(--touch-min);
+  font-size: 16px;
+  font-family: inherit;
+}
+
+.leaderboard-columns {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.filter-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 button {
-  min-height: 42px;
+  min-height: var(--touch-min);
   border-radius: 8px;
   font-weight: 800;
   border: 1px solid var(--line);
@@ -48,4 +87,68 @@ button:hover { background: var(--signal-strong); }
   box-shadow: var(--shadow);
   border-radius: 8px;
   padding: 1rem;
+}
+
+.app-content {
+  padding-bottom: calc(var(--nav-height) + var(--safe-bottom));
+}
+
+.top-nav { display: none; }
+.bottom-nav {
+  display: flex;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--nav-height) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  background: var(--panel);
+  border-top: 1px solid var(--line);
+  z-index: 30;
+}
+.bottom-nav-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: var(--touch-min);
+  font-size: 0.7rem;
+  text-decoration: none;
+  color: var(--mist);
+}
+.bottom-nav-tab[aria-current='page'] { color: var(--signal); }
+.profile-link {
+  position: fixed;
+  top: calc(var(--safe-top) + 0.75rem);
+  right: 0.75rem;
+  z-index: 30;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  text-decoration: none;
+}
+
+@media (min-width: 768px) {
+  .top-nav {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .bottom-nav, .profile-link { display: none; }
+  .app-content { padding-bottom: 0; }
+  .leaderboard-columns {
+    flex-direction: row;
+  }
+  .leaderboard-columns > .panel {
+    flex: 1 1 320px;
+  }
+  .filter-row { flex-direction: row; }
 }

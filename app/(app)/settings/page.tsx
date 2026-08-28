@@ -54,7 +54,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="panel" style={{ maxWidth: 480, margin: '1rem' }}>
+    <div className="panel" style={{ maxWidth: 480, margin: '0 auto', width: '100%', padding: '1rem' }}>
       <h1>Settings</h1>
       {!profile && <p>Sign in to load your profile.</p>}
       <form onSubmit={handleSubmit}>

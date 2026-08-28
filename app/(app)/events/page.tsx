@@ -73,7 +73,7 @@ export default function EventsPage() {
       <h1 style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.06em' }}>EVENTS</h1>
 
       <section className="panel" aria-label="Filters">
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+        <div className="filter-row" style={{ alignItems: 'flex-end' }}>
           <label style={{ display: 'grid', gap: '0.25rem' }}>
             <span>Voivodeship</span>
             <select value={filterVoivodeship} onChange={(e) => setFilterVoivodeship(e.target.value)} style={{ minHeight: '42px' }}>
@@ -95,15 +95,15 @@ export default function EventsPage() {
             <span>Title</span>
             <input required value={title} onChange={(e) => setTitle(e.target.value)} style={{ minHeight: '42px', padding: '0 0.5rem' }} />
           </label>
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <label style={{ display: 'grid', gap: '0.25rem', flex: '1', minWidth: '140px' }}>
+          <div className="filter-row">
+            <label style={{ display: 'grid', gap: '0.25rem', flex: '1' }}>
               <span>Type</span>
               <select required value={type} onChange={(e) => setType(e.target.value)} style={{ minHeight: '42px' }}>
                 <option value="">Select…</option>
                 {EVENT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
             </label>
-            <label style={{ display: 'grid', gap: '0.25rem', flex: '1', minWidth: '140px' }}>
+            <label style={{ display: 'grid', gap: '0.25rem', flex: '1' }}>
               <span>Voivodeship</span>
               <select required value={voivodeship} onChange={(e) => setVoivodeship(e.target.value)} style={{ minHeight: '42px' }}>
                 <option value="">Select…</option>
@@ -111,16 +111,16 @@ export default function EventsPage() {
               </select>
             </label>
           </div>
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <label style={{ display: 'grid', gap: '0.25rem', flex: '1', minWidth: '120px' }}>
+          <div className="filter-row">
+            <label style={{ display: 'grid', gap: '0.25rem', flex: '1' }}>
               <span>Lat</span>
               <input required type="number" step="any" value={lat} onChange={(e) => setLat(e.target.value)} style={{ minHeight: '42px', padding: '0 0.5rem' }} />
             </label>
-            <label style={{ display: 'grid', gap: '0.25rem', flex: '1', minWidth: '120px' }}>
+            <label style={{ display: 'grid', gap: '0.25rem', flex: '1' }}>
               <span>Lon</span>
               <input required type="number" step="any" value={lon} onChange={(e) => setLon(e.target.value)} style={{ minHeight: '42px', padding: '0 0.5rem' }} />
             </label>
-            <label style={{ display: 'grid', gap: '0.25rem', flex: '1.4', minWidth: '180px' }}>
+            <label style={{ display: 'grid', gap: '0.25rem', flex: '1.4' }}>
               <span>Starts at</span>
               <input required type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} style={{ minHeight: '42px', padding: '0 0.5rem' }} />
             </label>

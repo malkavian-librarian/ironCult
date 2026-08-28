@@ -31,7 +31,7 @@ npx playwright test         # local UI smoke checks (needs `npm run dev` running
   [docs/superpowers/specs/2026-08-28-ironcult-design.md](docs/superpowers/specs/2026-08-28-ironcult-design.md)
 - Phase/track implementation plans: [docs/superpowers/plans/](docs/superpowers/plans/)
   (`phase0-foundation.md`, `track-a-community-content.md`, `track-b-live-map-social.md`,
-  `phase4-integration-review.md`)
+  `phase4-integration-review.md`, `2026-08-28-mobile-first-redesign.md`)
 - Repo: https://github.com/malkavian-librarian/ironCult · Project board:
   https://github.com/users/malkavian-librarian/projects/1/views/1
 
@@ -40,7 +40,7 @@ npx playwright test         # local UI smoke checks (needs `npm run dev` running
 ```
 app/            Next.js App Router pages + API route handlers
 lib/            Shared server logic: db, auth, geo helpers (lib/geo/voivodeship.ts), domain queries
-components/     Shared React components (NavBar, LiveMap, PresenceToggle, ...)
+components/     Shared React components (NavBar, BottomNav, AppNav, LiveMap, PresenceToggle, ...)
 public/map/     Bundled GeoJSON boundaries (poland-voivodeships.json, warsaw-districts.json)
 tests/          Vitest (unit/, integration/) and Playwright (e2e/) tests
 docs/           Design spec, implementation plans, demo-prep checklist, market research
@@ -66,7 +66,7 @@ Start every session by reading: `CLAUDE.md` → the relevant plan under
   [.claude/rules/github-projects.md](.claude/rules/github-projects.md). We push often and fast;
   don't batch multiple tasks' worth of changes into one commit/PR.
 - Each task maps to a GitHub issue on the project board (labels `phase:0`, `track:A`, `track:B`,
-  `phase:4`). Update/close the issue as part of finishing the task, not as a separate pass later —
+  `phase:4`, `phase:5`). Update/close the issue as part of finishing the task, not as a separate pass later —
   this is what makes handover between sessions/agents cheap. See
   [.claude/rules/github-projects.md](.claude/rules/github-projects.md).
 - **Before starting any task, its GitHub issue must have an Acceptance Criteria checklist**
@@ -237,6 +237,28 @@ write to it.
   that branch. **Before pushing, run `npx tsc --noEmit` (or `npm run build` for the full check)
   in addition to `npx vitest run`** — vitest passing is not sufficient evidence the build will
   succeed.
+- **Nav visibility is CSS-only, not `useMediaQuery`.** `components/AppNav.tsx` renders both
+  `NavBar` (top, ≥768px) and `BottomNav`+`ProfileLink` (bottom tabs, <768px) unconditionally —
+  `app/globals.css`'s `@media (min-width: 768px)` block is the only thing that decides which is
+  visible. Don't reintroduce a JS-measured toggle; it reintroduces the hydration-flash bug this
+  pattern was chosen to avoid.
+- **The live map is the homepage (`/`), not a `/map` subpage.** The original Track B plan drafted
+  a separate `/map` route; the mobile-first pass folded it into `app/page.tsx` directly so the map
+  loads on first paint. `app/(app)/map/page.tsx` is a redirect stub, not the real map — if you see a
+  reference to `/map` as a route, it's stale; fix the reference, don't recreate the route.
+- **`100dvh`, never bare `100vh`, for anything meant to fill the mobile screen.** Bare `vh` on
+  Android Chrome is measured against the viewport with the address bar collapsed, which overshoots
+  the visible area on load and clips content — this bit `components/LiveMap.tsx` during the mobile
+  redesign. `--safe-top`/`--safe-bottom`/`--touch-min`/`--breakpoint-tablet`/`--nav-height` are the
+  five CSS custom properties that pattern depends on; don't duplicate them under new names.
+- **MapLibre marker hit-areas (16–18px) are below the 44px touch-target floor** the rest of the app
+  meets — a known, deliberately accepted gap from the mobile redesign (Task 3), not an oversight.
+  Don't "fix" it by silently shrinking the visual marker size to hide the mismatch; if it's ever
+  actually fixed, it needs a padded invisible hit-area, not a smaller marker.
+- **`phase:5` is the GitHub label for cross-track mobile-redesign work** — it isn't `track:A` or
+  `track:B` because it touches both tracks' pages after both were otherwise complete, the same way
+  `phase:4` already covers cross-track integration. Reuse `phase:5` for any future work in this same
+  "touches everything, both tracks are done" shape rather than inventing another label.
 - **Two agent sessions in the same working directory (`C:\Users\FlyerOne\Desktop\ironCult`) share
   one git checkout** — there is no per-session isolation. Concretely hit during Phase 4 (2026-08-28):
   a GLM session doing the mobile-first redesign had `mobile-redesign` checked out, and a Claude

@@ -1,13 +1,5 @@
-import { LiveMap } from '@/components/LiveMap';
-import { PresenceToggle } from '@/components/PresenceToggle';
+import { redirect } from 'next/navigation';
 
 export default function MapPage() {
-  return (
-    <main>
-      <div style={{ padding: '1rem' }}>
-        <PresenceToggle />
-      </div>
-      <LiveMap />
-    </main>
-  );
+  redirect('/');
 }

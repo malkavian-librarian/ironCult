@@ -36,7 +36,7 @@ export default function NewRoutePage() {
   }
 
   return (
-    <div className="panel" style={{ maxWidth: 480, margin: '1rem' }}>
+    <div className="panel" style={{ maxWidth: 480, margin: '0 auto', width: '100%', padding: '1rem' }}>
       <h1>New Route</h1>
       <form onSubmit={handleSubmit}>
         <label>
