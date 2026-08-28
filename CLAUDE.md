@@ -1,5 +1,7 @@
 # CLAUDE.md — ironCult
 
+@AGENTS.md
+
 ## Project context
 
 ironCult is a minimalistic, Poland-only motorcycle social network (Next.js App Router +
