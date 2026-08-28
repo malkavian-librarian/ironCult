@@ -173,6 +173,12 @@ write to it.
 - **AGENTS.md's `<!-- BEGIN:nextjs-agent-rules -->...<!-- END:nextjs-agent-rules -->` block is
   rewritten by `next dev` itself** — safe to edit AGENTS.md outside that block (that's where our
   own agent-facing conventions live), but don't hand-edit inside it, it'll just get overwritten.
+- **Drizzle wraps a Postgres error as `{ message: "Failed query: ...", cause: NeonDbError }`** —
+  the real Postgres error code (e.g. `23505` unique-violation) is on `err.cause.code`, not
+  `err.code` on the error you catch. Checking `err.code` directly silently never matches and
+  falls through to a 500 instead of the intended 409/etc. Walk `.cause` (see
+  `isUniqueViolation()` in `app/api/crews/route.ts` for the pattern) when narrowing a catch to a
+  specific Postgres error code.
 - **Track A and Track B never touch each other's application code** — they share only the Phase 0
   schema (`lib/db/schema.ts`). Turf-war is a read-only query against Track A's tables from Track B.
 - **`voivodeship` on `routes` is always derived server-side** from lat/lon via point-in-polygon —

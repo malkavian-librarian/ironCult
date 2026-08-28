@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { CrewPicker } from './crew-picker';
 
 type Profile = {
   id: string;
@@ -88,6 +89,7 @@ export default function SettingsPage() {
         <button type="submit">Save</button>
         {status && <p>{status}</p>}
       </form>
+      <CrewPicker crewId={profile?.crewId ?? null} onJoined={(crewId) => setProfile((p) => (p ? { ...p, crewId } : p))} />
     </div>
   );
 }
