@@ -259,6 +259,12 @@ write to it.
   `track:B` because it touches both tracks' pages after both were otherwise complete, the same way
   `phase:4` already covers cross-track integration. Reuse `phase:5` for any future work in this same
   "touches everything, both tracks are done" shape rather than inventing another label.
+- **`ONLINE_WINDOW_MS` in `lib/presence/online-window.ts` is 4 hours, not the "obviously correct"
+  60 seconds** — deliberately widened in #56 (2026-08-28) because seeded demo riders are static DB
+  rows with no browser re-pinging them; a short window drops them off the live map minutes after
+  seeding. Real riders still read as offline promptly on a demo's timescale once they stop pinging
+  (`PresenceToggle` pings every ~10s while active). Don't "fix" this back to a short window without
+  re-checking the demo seeding story first.
 - **Two agent sessions in the same working directory (`C:\Users\FlyerOne\Desktop\ironCult`) share
   one git checkout** — there is no per-session isolation. Concretely hit during Phase 4 (2026-08-28):
   a GLM session doing the mobile-first redesign had `mobile-redesign` checked out, and a Claude
